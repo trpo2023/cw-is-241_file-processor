@@ -34,5 +34,9 @@ int main()
         printf("Correct name for '%s to %s':\n%s\n", file1, file2, name);
     }
 
+    printf("\nUsing get_new_name(\"one_piece.txt\", \"file-{*}.*.old\"):\n");
+    char dest[50] = {0};
+    get_new_name("one_piece.txt", "file-{*}.*.old", dest);
+    printf("Results: %s\n", dest);
     return 0;
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+void get_new_name(char* name, char* pattern, char* dest);
 int file_exist(char* file_path);
 char* get_suffix(char* file_name);
 int get_correct_name(char* old_name, char* new_name, char* dest);

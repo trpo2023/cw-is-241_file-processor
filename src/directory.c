@@ -20,7 +20,7 @@ GPtrArray* read_dir(char* path)
             g_ptr_array_add(dir_list, file->d_name);
     }
 
-    free(dir);
     free(file);
+    closedir(dir);
     return dir_list;
 }

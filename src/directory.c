@@ -5,9 +5,9 @@
 
 #include "directory.h"
 
-GSList* read_dir(char* path)
+GPtrArray* read_dir(char* path)
 {
-    GSList* dir_list = NULL;
+    GPtrArray* dir_list = g_ptr_array_new();
     struct dirent* file;
 
     DIR* dir = opendir(path);
@@ -17,7 +17,7 @@ GSList* read_dir(char* path)
 
     while ((file = readdir(dir)) != NULL) {
         if ((file->d_type & DT_DIR) == DT_DIR)
-            dir_list = g_slist_append(dir_list, file->d_name);
+            g_ptr_array_add(dir_list, file->d_name);
     }
 
     free(dir);

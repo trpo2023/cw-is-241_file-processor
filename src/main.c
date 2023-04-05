@@ -3,13 +3,17 @@
 
 #include <directory.h>
 
+void print_dir(GPtrArray a)
+{
+    printf("%s\n", (char*)a.pdata);
+}
+
 int main()
 {
-    GSList* dir_list = read_dir(".");
+    GPtrArray* dir_list = read_dir(".");
 
-    for (GSList* i = dir_list; i != NULL; i = i->next)
-        printf("%s\n", (char*)i->data);
+    g_ptr_array_foreach(dir_list, (GFunc)print_dir, NULL);
 
-    g_slist_free(dir_list);
+    g_ptr_array_free(dir_list, FALSE);
     return 0;
 }

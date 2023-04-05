@@ -1,4 +1,4 @@
 #pragma once
-#include "list.h"
+#include <glib.h>
 
-List read_dir(char* path);
+GSList* read_dir(char* path);

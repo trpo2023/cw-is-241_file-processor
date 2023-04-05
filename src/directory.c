@@ -4,12 +4,10 @@
 #include <sys/types.h>
 
 #include "directory.h"
-#include "list.h"
 
-List read_dir(char* path)
+GSList* read_dir(char* path)
 {
-    List dir_list;
-    init_list(&dir_list);
+    GSList* dir_list = NULL;
     struct dirent* file;
 
     DIR* dir = opendir(path);
@@ -19,7 +17,7 @@ List read_dir(char* path)
 
     while ((file = readdir(dir)) != NULL) {
         if ((file->d_type & DT_DIR) == DT_DIR)
-            list_add(&dir_list, file->d_name);
+            dir_list = g_slist_append(dir_list, file->d_name);
     }
 
     free(dir);

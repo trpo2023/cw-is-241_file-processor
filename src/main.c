@@ -1,17 +1,15 @@
+#include <glib.h>
 #include <stdio.h>
 
 #include <directory.h>
 
-void print(Node* list)
-{
-    printf("%s\n", list->path);
-}
-
 int main()
 {
-    List dir_list = read_dir(".");
-    traverse_list(&dir_list, print);
-    list_clear(&dir_list);
+    GSList* dir_list = read_dir(".");
 
+    for (GSList* i = dir_list; i != NULL; i = i->next)
+        printf("%s\n", (char*)i->data);
+
+    g_slist_free(dir_list);
     return 0;
 }

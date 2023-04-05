@@ -1,7 +1,8 @@
 APP_NAME = main
 
 TESTFLAGS = -I thirdparty
-CFLAGS = -Wall -Werror -I src
+CFLAGS = -Wall -Werror -I src 
+GLIB = pkg-config --cflags --libs glib-2.0
 DEPSFLAGS = -MMD
 CC = gcc
 
@@ -24,10 +25,10 @@ all: $(APP_PATH)
 
 # BUILD
 $(APP_PATH): $(APP_OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(GLIB) | xargs $(CC) $(CFLAGS) -o $@ $^
 
 $(OBJ_DIR)/%.o: %.c
-	$(CC) $(CFLAGS) $(DEPSFLAGS) -c -o $@ $< 
+	$(GLIB) | xargs $(CC) $(CFLAGS) $(DEPSFLAGS) -c -o $@ $< 
 
 # RUN
 run: all

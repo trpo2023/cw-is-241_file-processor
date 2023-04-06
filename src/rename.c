@@ -1,4 +1,5 @@
 #include <dirent.h>
+#include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,16 +69,14 @@ int get_correct_name(char* old_name, char* new_name, char* dest)
     return 0;
 }
 
-int rename_file(char* old_name, char* new_name)
+char* rename_file(char* old_name, char* new_name, char* renamed)
 {
-    size_t len = strlen(new_name);
-    char name[len + 10]; // 10 bytes for number of file
-    int result = get_correct_name(old_name, new_name, name);
+    int result = get_correct_name(old_name, new_name, renamed);
     if (result == -1)
-        return -1;
+        return NULL;
 
-    rename(old_name, name);
-    return 0;
+    rename(old_name, renamed);
+    return renamed;
 }
 
 void get_new_name(char* name, char* pattern, char* dest)
@@ -111,4 +110,34 @@ void get_new_name(char* name, char* pattern, char* dest)
             k++;
         }
     }
+}
+
+GSList* rename_pair(GSList* pair, GSList* renamed_files)
+{
+    char new_name[MAX_LEN] = {0};
+    char* old_name = (char*)((Rename_pair*)pair->data)->name;
+    char* pattern = (char*)((Rename_pair*)pair->data)->pattern;
+    get_new_name(old_name, pattern, new_name);
+
+    char newest_name[MAX_LEN];
+    if (rename_file(old_name, new_name, newest_name) == NULL) {
+        return renamed_files;
+    }
+
+    // will be free, don't worry
+    Renamed_pair* renamed = malloc(sizeof(renamed));
+    strcpy(renamed->old_name, old_name);
+    strcpy(renamed->new_name, newest_name);
+
+    renamed_files = g_slist_append(renamed_files, renamed);
+    return renamed_files;
+}
+
+GSList* rename_files(GSList* pair_list)
+{
+    GSList* renamed_files = NULL;
+    for (GSList* i = pair_list; i != NULL; i = i->next) {
+        renamed_files = rename_pair(i, renamed_files);
+    }
+    return renamed_files;
 }

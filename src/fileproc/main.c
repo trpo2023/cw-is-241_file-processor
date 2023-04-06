@@ -1,8 +1,8 @@
 #include <glib.h>
 #include <stdio.h>
 
-#include <directory.h>
-#include <rename.h>
+#include <libfileproc/directory.h>
+#include <libfileproc/rename.h>
 
 void print_dir(GSList* a)
 {

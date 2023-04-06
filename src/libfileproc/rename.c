@@ -5,7 +5,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <rename.h>
+#include <libfileproc/rename.h>
 
 int file_exist(char* file_path)
 {

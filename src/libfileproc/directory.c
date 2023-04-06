@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
-#include "directory.h"
+#include <libfileproc/directory.h>
 
 GSList* read_dir(char* path)
 {

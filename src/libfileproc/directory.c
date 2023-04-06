@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
-#include "directory.h"
+#include <libfileproc/directory.h>
 
-GPtrArray* read_dir(char* path)
+GSList* read_dir(char* path)
 {
-    GPtrArray* dir_list = g_ptr_array_new();
+    GSList* dir_list = NULL;
     struct dirent* file;
 
     DIR* dir = opendir(path);
@@ -17,10 +17,10 @@ GPtrArray* read_dir(char* path)
 
     while ((file = readdir(dir)) != NULL) {
         if ((file->d_type & DT_DIR) == DT_DIR)
-            g_ptr_array_add(dir_list, file->d_name);
+            dir_list = g_slist_append(dir_list, file->d_name);
     }
 
-    free(dir);
     free(file);
+    closedir(dir);
     return dir_list;
 }

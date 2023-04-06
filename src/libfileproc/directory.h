@@ -1,4 +1,4 @@
 #pragma once
 #include <glib.h>
 
-GPtrArray* read_dir(char* path);
+GSList* read_dir(char* path);

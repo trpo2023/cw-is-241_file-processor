@@ -2,4 +2,5 @@
 *.d
 *.o
 .vscode
-main
+main_test
+fileproc

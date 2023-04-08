@@ -5,6 +5,7 @@
 
 #include <fileproc/interface.h>
 #include <libfileproc/directory.h>
+#include <libfileproc/lexer.h>
 #include <libfileproc/rename.h>
 
 void clear_list_data(GSList* list)

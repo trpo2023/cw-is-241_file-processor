@@ -105,6 +105,13 @@ void get_new_name(char* name, char* pattern, char* dest)
             dest[i] = name[j];
             j++;
             k++;
+        } else if (
+                pattern[k] == '.' && name[j] != '.' && pattern[k - 1] == '?') {
+            while (name[j] != '.') {
+                j++;
+            }
+            dest[i] = name[j++];
+            k++;
         } else if (pattern[k] != name[j]) {
             dest[i] = pattern[k];
             k++;

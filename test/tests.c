@@ -67,6 +67,13 @@ CTEST(rename, get_new_name)
     expect = "hello.txt";
     get_new_name(name, pattern, dest6);
     ASSERT_STR(expect, dest6);
+
+    name = "text_file.jpg";
+    pattern = "????.*";
+    char dest7[MAX_LEN] = {0};
+    expect = "text.jpg";
+    get_new_name(name, pattern, dest7);
+    ASSERT_STR(expect, dest7);
 }
 
 CTEST(rename, get_correct_name)

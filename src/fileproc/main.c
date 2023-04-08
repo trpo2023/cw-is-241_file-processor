@@ -32,9 +32,9 @@ int main()
         print_dir(i);
     g_slist_free(dir_list);
 
-    printf("\nUsing get_new_name(\"one_piece.txt\", \"file-{*}.*.old\"):\n");
+    printf("\nUsing get_new_name(\"test.txt\", \"??.*.old\"):\n");
     char dest[50] = {0};
-    get_new_name("one_piece.txt", "file-{*}.*.old", dest);
+    get_new_name("test.txt", "??.*.old", dest);
     printf("Results: %s\n\n", dest);
 
     // trying create new files and rename them after

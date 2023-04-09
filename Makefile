@@ -35,20 +35,20 @@ all: $(APP_PATH)
 
 # BUILD
 $(APP_PATH): $(APP_OBJECTS) $(LIB_PATH)
-	$(GLIB) | xargs $(CC) $(CFLAGS) -o $@ $^
+	$(GLIB) | xargs $(CC) $(CFLAGS) -o $@ $^ -lncursesw
 
 $(LIB_PATH): $(LIB_OBJECTS)
 	ar rcs $@ $^
 
 $(OBJ_DIR)/%.o: %.c
-	$(GLIB) | xargs $(CC) $(CFLAGS) $(DEPSFLAGS) -c -o $@ $< 
+	$(GLIB) | xargs $(CC) $(CFLAGS) $(DEPSFLAGS) -c -o $@ $< -lncursesw
 
 # TEST
 test: $(LIB_PATH) $(TEST_PATH)
 	$(TEST_PATH)
 
 $(TEST_PATH): $(TEST_OBJECTS) $(LIB_PATH)
-	$(GLIB) | xargs $(CC) $(TESTFLAGS) $(CFLAGS) $(DEPSFLAGS) -o $@ $^ -lm
+	$(GLIB) | xargs $(CC) $(TESTFLAGS) $(CFLAGS) $(DEPSFLAGS) -o $@ $^
 
 $(OBJ_DIR)/test/main.o: test/main.c
 	$(CC) $(TESTFLAGS) $(CFLAGS) $(DEPSFLAGS) -c -o $@ $<

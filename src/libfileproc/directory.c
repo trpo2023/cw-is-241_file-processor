@@ -35,7 +35,7 @@ GList* get_files_or_dirs_list(
 }
 
 int is_file_match_pattern(
-        char* name, char* pattern) // Проверка на соответствие файла шаблону
+        char* filename, char* pattern) // Проверка на соответствие файла шаблону
 {
     char* name_copy = NULL;
     char* pattern_copy = NULL;

@@ -37,19 +37,19 @@ GList* get_files_or_dirs_list(
 int is_file_match_pattern(
         char* filename, char* pattern) // Проверка на соответствие файла шаблону
 {
-    char* name_copy = NULL;
+    char* filename_copy = NULL;
     char* pattern_copy = NULL;
-    while (*name != '\0') {
+    while (*filename != '\0') {
         if (*pattern == '*') {
-            name_copy = name;
+            filename_copy = filename;
             pattern_copy = ++pattern;
-        } else if (*pattern == '?' || *pattern == *name) {
-            name++;
+        } else if (*pattern == '?' || *pattern == *filename) {
+            filename++;
             pattern++;
         } else {
             if (pattern_copy == NULL)
                 return false;
-            name = ++name_copy;
+            filename = ++filename_copy;
             pattern = pattern_copy;
         }
     }

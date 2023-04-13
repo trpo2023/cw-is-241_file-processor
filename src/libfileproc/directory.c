@@ -5,22 +5,29 @@
 
 #include <libfileproc/directory.h>
 
-GList* read_dir(char* path)
+GList* read_dir(char* path, int attr)
 {
     GList* dir_list = NULL;
+    GList* file_list = NULL;
     struct dirent* file;
-
     DIR* dir = opendir(path);
     if (!dir) {
         return NULL;
     }
 
     while ((file = readdir(dir)) != NULL) {
-        if ((file->d_type & DT_DIR) == DT_DIR)
-            dir_list = g_list_append(dir_list, file->d_name);
+        if (attr == 0) {
+            if ((file->d_type & DT_DIR) == DT_DIR)
+                dir_list = g_list_append(dir_list, file->d_name);
+        } else {
+            if ((file->d_type & DT_REG) == DT_REG)
+                file_list = g_list_append(file_list, file->d_name);
+        }
     }
 
-    free(file);
     closedir(dir);
-    return dir_list;
+    if (attr == 0)
+        return dir_list;
+    else
+        return file_list;
 }

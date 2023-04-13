@@ -31,3 +31,26 @@ GList* get_files_or_dirs_list(char* path, int attr)
     else
         return file_list;
 }
+
+int is_file_match_pattern(char* name, char* pattern)
+{
+    char* name_copy = NULL;
+    char* pattern_copy = NULL;
+    while (*name != '\0') {
+        if (*pattern == '*') {
+            name_copy = name;
+            pattern_copy = ++pattern;
+        } else if (*pattern == '?' || *pattern == *name) {
+            name++;
+            pattern++;
+        } else {
+            if (pattern_copy == NULL)
+                return false;
+            name = ++name_copy;
+            pattern = pattern_copy;
+        }
+    }
+    while (*pattern == '*')
+        pattern++;
+    return *pattern == '\0' ? true : false;
+}

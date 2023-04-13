@@ -303,7 +303,7 @@ char* select_dir(WINDOW* menu)
     mvwprintw(sub, 1, 1, "Выберите каталог:");
     char* dir = ".";
 
-    GList* dir_list = get_files_or_dirs_list(".", 0);
+    GList* dir_list = get_files_or_dirs_list(".", ndirs);
     dir_list = g_list_sort(dir_list, my_comparator);
     size_t dir_len = g_list_length(dir_list);
 

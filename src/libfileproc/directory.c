@@ -5,7 +5,9 @@
 
 #include <libfileproc/directory.h>
 
-GList* get_files_or_dirs_list(char* path, int attr)
+GList* get_files_or_dirs_list(
+        char* path, int attr) // получает список файлов или директорий, в
+                              // зависимости от атрибута
 {
     GList* dir_list = NULL;
     GList* file_list = NULL;
@@ -17,10 +19,10 @@ GList* get_files_or_dirs_list(char* path, int attr)
 
     while ((file = readdir(dir)) != NULL) {
         if (attr == 0) {
-            if ((file->d_type & DT_DIR) == DT_DIR)
+            if ((file->d_type & DT_DIR) == DT_DIR) // проверка на директорию
                 dir_list = g_list_append(dir_list, file->d_name);
         } else {
-            if ((file->d_type & DT_REG) == DT_REG)
+            if ((file->d_type & DT_REG) == DT_REG) // проверка на файл
                 file_list = g_list_append(file_list, file->d_name);
         }
     }
@@ -32,7 +34,8 @@ GList* get_files_or_dirs_list(char* path, int attr)
         return file_list;
 }
 
-int is_file_match_pattern(char* name, char* pattern)
+int is_file_match_pattern(
+        char* name, char* pattern) // Проверка на соответствие файла шаблону
 {
     char* name_copy = NULL;
     char* pattern_copy = NULL;

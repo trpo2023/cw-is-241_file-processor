@@ -1,4 +1,4 @@
 #pragma once
 #include <glib.h>
 
-GList* read_dir(char* path, int attr);
+GList* get_files_or_dirs_list(char* path, int attr);

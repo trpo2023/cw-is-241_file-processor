@@ -4,6 +4,7 @@
 
 #include "interface.h"
 #include <libfileproc/directory.h>
+#include <libfileproc/rename.h>
 
 const char menu_items[5][71] = {
         "1) Ввести шаблоны                      ",
@@ -76,7 +77,7 @@ int item_select(WINDOW* menu, int i)
         mvwprintw(menu, y - 3, 2, "%s", menu_items[i]);
     }
 
-    return KEY_F(1);
+    return KEY_F(10);
 }
 
 WINDOW* init_sub_window(WINDOW* menu, int max_y, int max_x)
@@ -90,6 +91,78 @@ WINDOW* init_sub_window(WINDOW* menu, int max_y, int max_x)
     return sub;
 }
 
+void print_opt(WINDOW* sub, Option* opt, int i)
+{
+    switch (i) {
+    case 0:
+        switch (opt->name_register) {
+        case R_DEFAULT:
+            mvwprintw(sub, i + 3, 15, "%-20s", "Default");
+            break;
+        case R_LOW:
+            mvwprintw(sub, i + 3, 15, "%-20s", "Low");
+            break;
+        case R_HIGH:
+            mvwprintw(sub, i + 3, 15, "%-20s", "High");
+            break;
+        }
+    }
+}
+
+void select_option(WINDOW* menu, Option* opt)
+{
+    const char* options[] = {"Регистр", "<- вернуться обратно в меню"};
+    int y, x;
+    getmaxyx(menu, y, x);
+    WINDOW* sub = init_sub_window(menu, y, x);
+    mvwprintw(sub, 1, 1, "Выберите опции:");
+    int options_cnt = 1; // 0 = 1 :)
+
+    wattron(sub, A_STANDOUT);
+    mvwprintw(sub, 3, 2, "%s", options[0]);
+    wattroff(sub, A_STANDOUT);
+    print_opt(sub, opt, 0);
+
+    for (int i = 1; i <= options_cnt; i++) {
+        mvwprintw(sub, i + 3, 2, "%s", options[i]);
+    }
+
+    wrefresh(sub);
+    int ch;
+    int i = 0;
+
+    while ((ch = wgetch(sub)) != KEY_F(10)) {
+        mvwprintw(sub, i + 3, 2, "%s", options[i]);
+        switch (ch) {
+        case KEY_UP:
+            i--;
+            i = (i < 0) ? options_cnt : i;
+            break;
+        case KEY_DOWN:
+            i++;
+            i = (i > options_cnt) ? 0 : i;
+            break;
+        case 10: // KEY_ENTER
+            switch (i) {
+            case 0:
+                opt->name_register++;
+                if (opt->name_register == 3)
+                    opt->name_register = R_DEFAULT;
+                print_opt(sub, opt, i);
+                wrefresh(sub);
+                break;
+            case 1:
+                wclear(sub);
+                wrefresh(sub);
+                return;
+            }
+        }
+        wattron(sub, A_STANDOUT);
+        mvwprintw(sub, i + 3, 2, "%s", options[i]);
+        wattroff(sub, A_STANDOUT);
+    }
+}
+
 void start(WINDOW* menu)
 {
     WINDOW* sub;
@@ -97,7 +170,8 @@ void start(WINDOW* menu)
     getmaxyx(menu, row, col);
     int result = 0;
     char* current_dir = ".";
-    while ((result = item_select(menu, result)) != 4 && result != KEY_F(1)) {
+    Option option = {0};
+    while ((result = item_select(menu, result)) != 4 && result != KEY_F(10)) {
         wrefresh(menu);
         switch (result) {
         case 0:
@@ -121,10 +195,10 @@ void start(WINDOW* menu)
             delwin(sub);
             break;
         case 3:
-            sub = init_sub_window(menu, row, col);
-            mvwprintw(sub, 1, 1, "ВЫБОР ОПЦИЙ");
-            wrefresh(sub);
-            delwin(sub);
+            select_option(menu, &option);
+            wattron(menu, A_STANDOUT);
+            mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
+            wattroff(menu, A_STANDOUT);
             break;
         }
     }

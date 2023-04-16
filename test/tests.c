@@ -76,19 +76,59 @@ CTEST(rename, get_new_name)
     ASSERT_STR(expect, dest7);
 }
 
-CTEST(rename, get_correct_name)
+CTEST(rename, get_correct_name_default)
 {
     FILE* f = fopen("rename_testing_file.txt", "w");
     fclose(f);
     f = fopen("rename_new_name.txt", "w");
     fclose(f);
 
+    Option opt = {.name_register = R_DEFAULT};
+
     char* old_name = "rename_testing_file.txt";
     char* new_name = "rename_new_name.txt";
     char dest[MAX_LEN];
     char* expect = "rename_new_name (1).txt";
-    get_correct_name(old_name, new_name, dest);
+    get_correct_name(old_name, new_name, dest, &opt);
     remove("rename_testing_file.txt");
     remove("rename_new_name.txt");
+    ASSERT_STR(expect, dest);
+}
+
+CTEST(rename, get_correct_name_upper)
+{
+    FILE* f = fopen("rename_testing_file.txt", "w");
+    fclose(f);
+    f = fopen("rename_new_name.txt", "w");
+    fclose(f);
+
+    Option opt = {.name_register = R_HIGH};
+
+    char* old_name = "rename_testing_file.txt";
+    char* new_name = "rename_new_name.txt";
+    char dest[MAX_LEN];
+    char* expect = "RENAME_NEW_NAME.txt";
+    get_correct_name(old_name, new_name, dest, &opt);
+    remove("rename_testing_file.txt");
+    remove("rename_new_name.txt");
+    ASSERT_STR(expect, dest);
+}
+
+CTEST(rename, get_correct_name_lower)
+{
+    FILE* f = fopen("rename_testing_file.txt", "w");
+    fclose(f);
+    f = fopen("Rename_New_Name.txt", "w");
+    fclose(f);
+
+    Option opt = {.name_register = R_LOW};
+
+    char* old_name = "rename_testing_file.txt";
+    char* new_name = "rename_new_name.txt";
+    char dest[MAX_LEN];
+    char* expect = "rename_new_name.txt";
+    get_correct_name(old_name, new_name, dest, &opt);
+    remove("rename_testing_file.txt");
+    remove("Rename_New_Name.txt");
     ASSERT_STR(expect, dest);
 }

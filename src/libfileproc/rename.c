@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <dirent.h>
 #include <glib.h>
 #include <stdio.h>
@@ -29,7 +30,35 @@ char* get_suffix(char* file_name)
     return NULL;
 }
 
-int get_correct_name(char* old_name, char* new_name, char* dest)
+void to_lower_string(char* string)
+{
+    while (*string != '\0') {
+        *string = tolower(*string);
+        string++;
+    }
+}
+
+void to_upper_string(char* string)
+{
+    while (*string != '\0') {
+        *string = toupper(*string);
+        string++;
+    }
+}
+
+void change_register(char* name, unsigned int status)
+{
+    switch (status) {
+    case R_LOW:
+        to_lower_string(name);
+        break;
+    case R_HIGH:
+        to_upper_string(name);
+        break;
+    }
+}
+
+int get_correct_name(char* old_name, char* new_name, char* dest, Option* opt)
 {
     if (file_exist(old_name) == 1)
         return -1;
@@ -54,12 +83,14 @@ int get_correct_name(char* old_name, char* new_name, char* dest)
     strncpy(newest_name, new_name, name_len);
     newest_name[name_len] = '\0';
 
+    change_register(newest_name, opt->name_register);
     if (suffix_len == 0)
         sprintf(dest, "%s", newest_name);
     else
         sprintf(dest, "%s%s", newest_name, suffix);
 
     while (file_exist(dest) == 0) {
+        change_register(newest_name, opt->name_register);
         if (suffix_len == 0)
             sprintf(dest, "%s (%d)", newest_name, counter++);
         else
@@ -69,9 +100,9 @@ int get_correct_name(char* old_name, char* new_name, char* dest)
     return 0;
 }
 
-char* rename_file(char* old_name, char* new_name, char* renamed)
+char* rename_file(char* old_name, char* new_name, char* renamed, Option* opt)
 {
-    int result = get_correct_name(old_name, new_name, renamed);
+    int result = get_correct_name(old_name, new_name, renamed, opt);
     if (result == -1)
         return NULL;
 
@@ -119,7 +150,7 @@ void get_new_name(char* name, char* pattern, char* dest)
     }
 }
 
-GSList* rename_pair(GSList* pair, GSList* renamed_files)
+GSList* rename_pair(GSList* pair, GSList* renamed_files, Option* opt)
 {
     char new_name[MAX_LEN] = {0};
     char* old_name = (char*)((Rename_pair*)pair->data)->name;
@@ -127,7 +158,7 @@ GSList* rename_pair(GSList* pair, GSList* renamed_files)
     get_new_name(old_name, pattern, new_name);
 
     char newest_name[MAX_LEN];
-    if (rename_file(old_name, new_name, newest_name) == NULL) {
+    if (rename_file(old_name, new_name, newest_name, opt) == NULL) {
         return renamed_files;
     }
 
@@ -140,11 +171,11 @@ GSList* rename_pair(GSList* pair, GSList* renamed_files)
     return renamed_files;
 }
 
-GSList* rename_files(GSList* pair_list)
+GSList* rename_files(GSList* pair_list, Option* opt)
 {
     GSList* renamed_files = NULL;
     for (GSList* i = pair_list; i != NULL; i = i->next) {
-        renamed_files = rename_pair(i, renamed_files);
+        renamed_files = rename_pair(i, renamed_files, opt);
     }
     return renamed_files;
 }

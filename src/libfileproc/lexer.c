@@ -1,6 +1,3 @@
-#include <stdbool.h>
-#include <stdio.h>
-
 #include <libfileproc/lexer.h>
 
 char* skip_space(char* string) // пропуск пробелов
@@ -157,5 +154,59 @@ int check_sample_string(char* string) // проверка полной стро�
     int rename_sample = check_rename_sample(&test_string);
     if (rename_sample)
         return rename_sample;
+    return success;
+}
+
+// Взятие отдельного паттерна из всей строки
+char* get_pattern(char* sample, char** pattern)
+{
+    char* buffer = *pattern;
+    while (1) {
+        if (*sample == ' ')
+            break;
+        if (*sample == ':')
+            break;
+        if (*sample == '\0')
+            break;
+        *buffer = *sample;
+        buffer++;
+        sample++;
+    }
+    *buffer = '\0';
+    return sample;
+}
+
+// Сдвинуть указатель к началу следующего паттерна
+char* to_rename_pattern(char* sample)
+{
+    while (1) {
+        if (*sample == ' ')
+            sample++;
+        else if (*sample == ':')
+            sample++;
+        else
+            return sample;
+    }
+}
+
+// Разбить строку на паттерны
+sample_parts split_sample(char* sample, sample_parts* patterns)
+{
+    sample = skip_space(sample);
+    sample = get_pattern(sample, &(patterns->search_pattern));
+    sample = to_rename_pattern(sample);
+    get_pattern(sample, &(patterns->rename_pattern));
+    return *patterns;
+}
+
+// Разделить строку и записать в структуру
+int get_sample(char* sample, sample_parts* patterns)
+{
+    int check = check_sample_string(sample);
+    if (check)
+        return check;
+    patterns->search_pattern = malloc(256);
+    patterns->rename_pattern = malloc(256);
+    *patterns = split_sample(sample, patterns);
     return success;
 }

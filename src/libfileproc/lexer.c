@@ -1,3 +1,5 @@
+#include <glib.h>
+
 #include <libfileproc/lexer.h>
 
 char* skip_space(char* string) // пропуск пробелов
@@ -209,4 +211,15 @@ int get_sample(char* sample, sample_parts* patterns)
     patterns->rename_pattern = malloc(256);
     *patterns = split_sample(sample, patterns);
     return success;
+}
+
+GList* add_sample(GList* sample_list, char* sample, int* exit_code)
+{
+    sample_parts* pattern = malloc(sizeof(sample_parts));
+    *exit_code = get_sample(sample, pattern);
+    if (*exit_code == 0) {
+        sample_list = g_list_append(sample_list, pattern);
+    }
+
+    return sample_list;
 }

@@ -25,5 +25,6 @@ int main()
     delwin(menu);
     endwin();
 
+
     return 0;
 }

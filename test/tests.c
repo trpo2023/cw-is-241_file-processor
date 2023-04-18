@@ -1,4 +1,5 @@
 #include <ctest.h>
+#include <glib.h>
 #include <stdio.h>
 
 #include <libfileproc/lexer.h>

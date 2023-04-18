@@ -1,6 +1,8 @@
 #include <ctest.h>
+#include <glib.h>
 #include <stdio.h>
 
+#include <libfileproc/lexer.h>
 #include <libfileproc/rename.h>
 
 CTEST(rename, get_suffix)
@@ -131,4 +133,65 @@ CTEST(rename, get_correct_name_lower)
     remove("rename_testing_file.txt");
     remove("Rename_New_Name.txt");
     ASSERT_STR(expect, dest);
+}
+
+CTEST(lexer, check_sample_string)
+{
+    int result_0 = check_sample_string("*.txt:  *");
+    int result_1 = check_sample_string("**.txt:*");
+    int result_2 = check_sample_string("?*test.txt:*");
+    int result_3 = check_sample_string(
+            "12345678901234567890123456789012345678901234567890123456789"
+            "01234567890123456789012345678901234567890123456789012345678"
+            "90123456789012345678901234567890123456789012345678901234567"
+            "89012345678901234567890123456789012345678901234567890123456"
+            "789012345678901234567890:*");
+    int result_4 = check_sample_string("       :*.txt");
+    int result_5 = check_sample_string("test.txt:    ");
+    int result_6 = check_sample_string("test.txt   *.txt");
+    int result_7 = check_sample_string("test.txt : *.txt : *");
+    int result_8 = check_sample_string("test.txt 1.bin : one_piece.*");
+    int result_9 = check_sample_string("test.txt : *.txt  0");
+    int result_10 = check_sample_string("*/.txt:  *");
+
+    int expected_0 = 0;
+    int expected_1 = 1;
+    int expected_2 = 2;
+    int expected_3 = 3;
+    int expected_4 = 4;
+    int expected_5 = 5;
+    int expected_6 = 6;
+    int expected_7 = 7;
+    int expected_8 = 8;
+    int expected_9 = 9;
+    int expected_10 = 10;
+
+    ASSERT_EQUAL(expected_0, result_0);
+    ASSERT_EQUAL(expected_1, result_1);
+    ASSERT_EQUAL(expected_2, result_2);
+    ASSERT_EQUAL(expected_3, result_3);
+    ASSERT_EQUAL(expected_4, result_4);
+    ASSERT_EQUAL(expected_5, result_5);
+    ASSERT_EQUAL(expected_6, result_6);
+    ASSERT_EQUAL(expected_7, result_7);
+    ASSERT_EQUAL(expected_8, result_8);
+    ASSERT_EQUAL(expected_9, result_9);
+    ASSERT_EQUAL(expected_10, result_10);
+}
+
+CTEST(lexer, get_sample)
+{
+    char sample[] = "*.txt:  *";
+    char search_pattern[] = "*.txt";
+    char rename_pattern[] = "*";
+    sample_parts patterns[10];
+    int returned = get_sample(sample, &patterns[3]);
+    int search_pattern_result
+            = strcmp(search_pattern, patterns[3].search_pattern);
+    int rename_pattern_result
+            = strcmp(rename_pattern, patterns[3].rename_pattern);
+    int expected = 0;
+    ASSERT_EQUAL(expected, returned);
+    ASSERT_EQUAL(expected, search_pattern_result);
+    ASSERT_EQUAL(expected, rename_pattern_result);
 }

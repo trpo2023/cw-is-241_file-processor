@@ -98,6 +98,7 @@ CTEST(rename, get_correct_name_default)
     ASSERT_STR(expect, dest);
 }
 
+<<<<<<< HEAD
 CTEST(rename, get_correct_name_upper)
 {
     FILE* f = fopen("rename_testing_file.txt", "w");

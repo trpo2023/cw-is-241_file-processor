@@ -57,3 +57,27 @@ int is_file_match_pattern(
         pattern++;
     return *pattern == '\0' ? true : false;
 }
+
+void list_data(list_part* p, void* filename_data, void* pattern_data)
+{
+    p->filename = filename_data;
+    p->pattern = pattern_data;
+}
+
+GList* get_files_patterns_list(GList* filesname, GList* patterns)
+{
+    GList* files_and_patterns_list = NULL;
+    for (GList* filename = filesname; filename != NULL;
+         filename = filename->next) {
+        for (GList* pattern = patterns; pattern != NULL;
+             pattern = pattern->next) {
+            if (is_file_match_pattern(filename->data, pattern->data)) {
+                list_part* p = malloc(sizeof(list_part));
+                list_data(p, filename->data, pattern->data);
+                files_and_patterns_list
+                        = g_list_append(files_and_patterns_list, p);
+            }
+        }
+    }
+    return files_and_patterns_list;
+}

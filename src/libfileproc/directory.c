@@ -5,6 +5,11 @@
 
 #include <libfileproc/directory.h>
 
+gint my_comparator(gconstpointer item1, gconstpointer item2)
+{
+    return g_ascii_strcasecmp(item1, item2);
+}
+
 GList* get_files_or_dirs_list(
         char* path, int attr) // получает список файлов или директорий, в
                               // зависимости от атрибута

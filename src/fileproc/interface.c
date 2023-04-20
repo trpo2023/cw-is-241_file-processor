@@ -206,11 +206,6 @@ void start(WINDOW* menu)
     return;
 }
 
-gint my_comparator(gconstpointer item1, gconstpointer item2)
-{
-    return g_ascii_strcasecmp(item1, item2);
-}
-
 void print_dir(WINDOW* sub, GList* dir_list, int* dir_cnt)
 {
     int y = getmaxy(sub);

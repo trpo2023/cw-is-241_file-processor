@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include <libfileproc/lexer.h>
+#include <libfileproc/directory.h>
 #include <libfileproc/rename.h>
 
 CTEST(rename, get_suffix)
@@ -194,4 +195,105 @@ CTEST(lexer, get_sample)
     ASSERT_EQUAL(expected, returned);
     ASSERT_EQUAL(expected, search_pattern_result);
     ASSERT_EQUAL(expected, rename_pattern_result);
+}
+
+CTEST(directory, get_files_or_dirs_list)
+{
+    char* path = "../cw-is-241_file-processor";
+    GList* result_list = get_files_or_dirs_list(path, 0);
+    int expect = 0;
+
+    int result1 = strcmp((char*)result_list->data, "src");
+    result_list = result_list->next;
+    int result2 = strcmp((char*)result_list->data, "obj");
+    result_list = result_list->next;
+    int result3 = strcmp((char*)result_list->data, ".git");
+    result_list = result_list->next;
+    int result4 = strcmp((char*)result_list->data, "docs");
+    result_list = result_list->next;
+    int result5 = strcmp((char*)result_list->data, "thirdparty");
+    result_list = result_list->next;
+    int result6 = strcmp((char*)result_list->data, ".github");
+    result_list = result_list->next;
+    int result7 = strcmp((char*)result_list->data, "test");
+    result_list = result_list->next;
+    int result8 = strcmp((char*)result_list->data, "bin");
+    result_list = result_list->next;
+    int result9 = strcmp((char*)result_list->data, "..");
+    result_list = result_list->next;
+    int result10 = strcmp((char*)result_list->data, ".");
+
+    ASSERT_EQUAL(expect, result1);
+    ASSERT_EQUAL(expect, result2);
+    ASSERT_EQUAL(expect, result3);
+    ASSERT_EQUAL(expect, result4);
+    ASSERT_EQUAL(expect, result5);
+    ASSERT_EQUAL(expect, result6);
+    ASSERT_EQUAL(expect, result7);
+    ASSERT_EQUAL(expect, result8);
+    ASSERT_EQUAL(expect, result9);
+    ASSERT_EQUAL(expect, result10);
+
+    g_list_free(result_list);
+
+    result_list = get_files_or_dirs_list(path, nfiles);
+    result1 = strcmp((char*)result_list->data, ".gitignore");
+    result_list = result_list->next;
+    result2 = strcmp((char*)result_list->data, ".clang-format");
+    result_list = result_list->next;
+    result3 = strcmp((char*)result_list->data, "Makefile");
+
+    ASSERT_EQUAL(expect, result1);
+    ASSERT_EQUAL(expect, result2);
+    ASSERT_EQUAL(expect, result3);
+}
+
+CTEST(directory, get_files_patterns_list)
+{
+    GList* result_list = NULL;
+    GList* filesname = NULL;
+    GList* patterns = NULL;
+    int expect = 0;
+
+    filesname = g_list_append(filesname, "test.txt");
+    filesname = g_list_append(filesname, "test.h");
+    filesname = g_list_append(filesname, "tost.txt");
+
+    patterns = g_list_append(patterns, "*.txt");
+    patterns = g_list_append(patterns, "*.*");
+    patterns = g_list_append(patterns, "tost.*");
+
+    result_list = get_files_patterns_list(filesname, patterns);
+    list_part* file = (list_part*)result_list->data;
+    int result_file_name1 = strcmp(file->filename, "test.txt");
+    int result_pattern1 = strcmp(file->pattern, "*.txt");
+    int result1 = (result_file_name1 == 0 && result_pattern1 == 0) ? 0 : 1;
+    result_list = result_list->next;
+    file = (list_part*)result_list->data;
+    int result_pattern12 = strcmp(file->pattern, "*.*");
+    int result12 = (result_file_name1 == 0 && result_pattern12 == 0) ? 0 : 1;
+    result_list = result_list->next;
+    file = (list_part*)result_list->data;
+    int result_file_name2 = strcmp(file->filename, "test.h");
+    int result_pattern2 = strcmp(file->pattern, "*.*");
+    int result2 = (result_file_name2 == 0 && result_pattern2 == 0) ? 0 : 1;
+    result_list = result_list->next;
+    file = (list_part*)result_list->data;
+    int result_file_name3 = strcmp(file->filename, "tost.txt");
+    int result_pattern31 = strcmp(file->pattern, "*.txt");
+    int result31 = (result_file_name3 == 0 && result_pattern31 == 0) ? 0 : 1;
+    result_list = result_list->next;
+    file = (list_part*)result_list->data;
+    int result_pattern32 = strcmp(file->pattern, "*.*");
+    int result32 = (result_file_name3 == 0 && result_pattern32 == 0) ? 0 : 1;
+    result_list = result_list->next;
+    file = (list_part*)result_list->data;
+    int result_pattern33 = strcmp(file->pattern, "tost.*");
+    int result33 = (result_file_name3 == 0 && result_pattern33 == 0) ? 0 : 1;
+    ASSERT_EQUAL(expect, result1);
+    ASSERT_EQUAL(expect, result12);
+    ASSERT_EQUAL(expect, result2);
+    ASSERT_EQUAL(expect, result31);
+    ASSERT_EQUAL(expect, result32);
+    ASSERT_EQUAL(expect, result33);
 }

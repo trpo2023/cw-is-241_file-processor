@@ -14,6 +14,8 @@ const char menu_items[5][71] = {
         "5) Выход из приложения (F10)           ",
 };
 
+void pattern_input(WINDOW* menu);
+
 WINDOW* init_menu()
 {
     initscr();
@@ -175,10 +177,10 @@ void start(WINDOW* menu)
         wrefresh(menu);
         switch (result) {
         case 0:
-            sub = init_sub_window(menu, row, col);
-            mvwprintw(sub, 1, 1, "ВВЕСТИ ШАБЛОНЫ");
-            wrefresh(sub);
-            delwin(sub);
+            pattern_input(menu);
+            wattron(menu, A_STANDOUT);
+            mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
+            wattroff(menu, A_STANDOUT);
             break;
         case 1:
             current_dir = select_dir(menu);
@@ -316,4 +318,38 @@ char* select_dir(WINDOW* menu)
     wclear(sub);
     wrefresh(sub);
     return dir;
+}
+
+void pattern_input(WINDOW* menu)
+{
+    int y, x;
+    getmaxyx(menu, y, x);
+    WINDOW* sub = init_sub_window(menu, y, x);
+    mvwprintw(sub, 1, 1, "Введите шаблон:");
+    wrefresh(sub);
+
+    getmaxyx(sub, y, x);
+
+    int max_npatterns = y - 3;
+    curs_set(1);
+    echo();
+
+    int cnt = 0;
+    mvwprintw(sub, 1, x - 10, "%d/%d", cnt, max_npatterns);
+    char str[MAX_LEN] = {0};
+    mvwgetnstr(sub, 2, 2, str, x - 3);
+    mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_npatterns);
+
+    for (int i = 1; i < max_npatterns && str[0] != '\0'; i++) {
+        mvwgetnstr(sub, 2 + i, 2, str, x - 3);
+        mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_npatterns);
+        wrefresh(sub);
+    }
+
+    curs_set(0);
+    noecho();
+
+    wclear(sub);
+    wrefresh(sub);
+    delwin(sub);
 }

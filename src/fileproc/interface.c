@@ -14,7 +14,7 @@ const char menu_items[5][71] = {
         "5) Выход из приложения (F10)           ",
 };
 
-void pattern_input(WINDOW* menu);
+GList* pattern_input(WINDOW* menu, GList* samples);
 
 WINDOW* init_menu()
 {
@@ -28,7 +28,7 @@ WINDOW* init_menu()
         exit(EXIT_FAILURE);
     }
 
-    char* top = "File processor";
+    char* top = "File processor 🇷🇺";
     mvwprintw(stdscr, 0, (x - strlen(top)) / 2, "%s", top);
     refresh();
 
@@ -173,11 +173,12 @@ void start(WINDOW* menu)
     int result = 0;
     char* current_dir = ".";
     Option option = {0};
+    GList* samples = NULL;
     while ((result = item_select(menu, result)) != 4 && result != KEY_F(10)) {
         wrefresh(menu);
         switch (result) {
         case 0:
-            pattern_input(menu);
+            samples = pattern_input(menu, samples);
             wattron(menu, A_STANDOUT);
             mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
             wattroff(menu, A_STANDOUT);
@@ -320,7 +321,18 @@ char* select_dir(WINDOW* menu)
     return dir;
 }
 
-void pattern_input(WINDOW* menu)
+int print_samples(WINDOW* sub, GList* samples)
+{
+    int cnt = 0;
+    for (GList* i = samples; i != NULL; i = i->next) {
+        mvwprintw(sub, 2 + cnt, 2, "%s", (char*)i->data);
+        cnt++;
+    }
+
+    return cnt;
+}
+
+GList* pattern_input(WINDOW* menu, GList* samples)
 {
     int y, x;
     getmaxyx(menu, y, x);
@@ -333,16 +345,42 @@ void pattern_input(WINDOW* menu)
     int max_npatterns = y - 3;
     curs_set(1);
     echo();
-
     int cnt = 0;
-    mvwprintw(sub, 1, x - 10, "%d/%d", cnt, max_npatterns);
-    char str[MAX_LEN] = {0};
-    mvwgetnstr(sub, 2, 2, str, x - 3);
-    mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_npatterns);
 
-    for (int i = 1; i < max_npatterns && str[0] != '\0'; i++) {
-        mvwgetnstr(sub, 2 + i, 2, str, x - 3);
+    if (samples != NULL) {
+        cnt = print_samples(sub, samples);
+        wrefresh(sub);
+    }
+    mvwprintw(sub, 1, x - 10, "%d/%d", cnt, max_npatterns);
+    if (cnt == max_npatterns) {
+        mvwprintw(sub, 1, 20, "МЕСТА НЕТ");
+        curs_set(0);
+        noecho();
+        wgetch(sub);
+
+        wclear(sub);
+        wrefresh(sub);
+        delwin(sub);
+        return samples;
+    }
+
+    char* str = malloc(x - 3);
+    mvwgetnstr(sub, cnt + 2, 2, str, x - 3);
+    if (*str > 0) {
+        samples = g_list_append(samples, str);
         mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_npatterns);
+    }
+
+    for (int i = cnt; i < max_npatterns && str[0] != '\0'; i++) {
+        str = malloc(x - 3);
+        if (i == 10) {
+            mvwprintw(sub, i + 2, 1, "╳");
+        }
+        mvwgetnstr(sub, 2 + i, 2, str, x - 3);
+        if (*str > 0) {
+            samples = g_list_append(samples, str);
+            mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_npatterns);
+        }
         wrefresh(sub);
     }
 
@@ -352,4 +390,6 @@ void pattern_input(WINDOW* menu)
     wclear(sub);
     wrefresh(sub);
     delwin(sub);
+
+    return samples;
 }

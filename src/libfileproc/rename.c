@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include <libfileproc/directory.h>
 #include <libfileproc/rename.h>
 
 int file_exist(char* file_path)
@@ -153,19 +154,19 @@ void get_new_name(char* name, char* pattern, char* dest)
 GSList* rename_pair(GSList* pair, GSList* renamed_files, Option* opt)
 {
     char new_name[MAX_LEN] = {0};
-    char* old_name = (char*)((Rename_pair*)pair->data)->name;
-    char* pattern = (char*)((Rename_pair*)pair->data)->pattern;
+    char* old_name = (char*)((File_to_rename*)pair->data)->filename;
+    char* pattern = (char*)((File_to_rename*)pair->data)->pattern;
     get_new_name(old_name, pattern, new_name);
 
-    char newest_name[MAX_LEN];
+    char* newest_name = malloc(sizeof(char) * MAX_LEN);
     if (rename_file(old_name, new_name, newest_name, opt) == NULL) {
         return renamed_files;
     }
 
     // will be free, don't worry
-    Renamed_pair* renamed = malloc(sizeof(renamed));
-    strcpy(renamed->old_name, old_name);
-    strcpy(renamed->new_name, newest_name);
+    Renamed_file* renamed = malloc(sizeof(renamed));
+    renamed->old_name = old_name;
+    renamed->new_name = newest_name;
 
     renamed_files = g_slist_append(renamed_files, renamed);
     return renamed_files;

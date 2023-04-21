@@ -2,19 +2,14 @@
 #include <glib.h>
 #define MAX_LEN 256
 
-typedef struct pair {
-    char old_name[MAX_LEN];
-    char new_name[MAX_LEN];
-} Renamed_pair;
-
-typedef struct pair1 {
-    char name[MAX_LEN];
-    char pattern[MAX_LEN];
-} Rename_pair;
+typedef struct {
+    char* old_name;
+    char* new_name;
+} Renamed_file;
 
 enum Register { R_DEFAULT, R_LOW, R_HIGH };
 
-typedef struct option {
+typedef struct {
     unsigned int name_register;
 } Option;
 

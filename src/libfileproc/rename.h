@@ -18,5 +18,5 @@ int file_exist(char* file_path);
 char* get_suffix(char* file_name);
 int get_correct_name(char* old_name, char* new_name, char* dest, Option* opt);
 char* rename_file(char* old_name, char* new_name, char* renamed, Option* opt);
-GSList* rename_pair(GSList* pair, GSList* renamed_files, Option* opt);
-GSList* rename_files(GSList* pair_list, Option* opt);
+GList* rename_pair(GList* pair, GList* renamed_files, Option* opt);
+GList* rename_files(GList* pair_list, Option* opt);

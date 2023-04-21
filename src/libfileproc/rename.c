@@ -151,7 +151,7 @@ void get_new_name(char* name, char* pattern, char* dest)
     }
 }
 
-GSList* rename_pair(GSList* pair, GSList* renamed_files, Option* opt)
+GList* rename_pair(GList* pair, GList* renamed_files, Option* opt)
 {
     char new_name[MAX_LEN] = {0};
     char* old_name = (char*)((File_to_rename*)pair->data)->filename;
@@ -168,14 +168,14 @@ GSList* rename_pair(GSList* pair, GSList* renamed_files, Option* opt)
     renamed->old_name = old_name;
     renamed->new_name = newest_name;
 
-    renamed_files = g_slist_append(renamed_files, renamed);
+    renamed_files = g_list_append(renamed_files, renamed);
     return renamed_files;
 }
 
-GSList* rename_files(GSList* pair_list, Option* opt)
+GList* rename_files(GList* pair_list, Option* opt)
 {
-    GSList* renamed_files = NULL;
-    for (GSList* i = pair_list; i != NULL; i = i->next) {
+    GList* renamed_files = NULL;
+    for (GList* i = pair_list; i != NULL; i = i->next) {
         renamed_files = rename_pair(i, renamed_files, opt);
     }
     return renamed_files;

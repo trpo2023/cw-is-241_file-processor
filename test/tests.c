@@ -2,6 +2,7 @@
 #include <glib.h>
 #include <stdio.h>
 
+#include <libfileproc/directory.h>
 #include <libfileproc/lexer.h>
 #include <libfileproc/rename.h>
 
@@ -194,4 +195,54 @@ CTEST(lexer, get_sample)
     ASSERT_EQUAL(expected, returned);
     ASSERT_EQUAL(expected, search_pattern_result);
     ASSERT_EQUAL(expected, rename_pattern_result);
+}
+
+CTEST(directory, get_files_patterns_list)
+{
+    GList* result_list = NULL;
+    GList* filesname = NULL;
+    GList* patterns = NULL;
+    int expect = 0;
+
+    filesname = g_list_append(filesname, "test.txt");
+    filesname = g_list_append(filesname, "test.h");
+    filesname = g_list_append(filesname, "tost.txt");
+
+    patterns = g_list_append(patterns, "*.txt");
+    patterns = g_list_append(patterns, "*.*");
+    patterns = g_list_append(patterns, "tost.*");
+
+    result_list = get_files_patterns_list(filesname, patterns);
+    File_to_rename* file = (File_to_rename*)result_list->data;
+    int result_file_name1 = strcmp(file->filename, "test.txt");
+    int result_pattern1 = strcmp(file->pattern, "*.txt");
+    int result1 = (result_file_name1 == 0 && result_pattern1 == 0) ? 0 : 1;
+    result_list = result_list->next;
+    file = (File_to_rename*)result_list->data;
+    int result_pattern12 = strcmp(file->pattern, "*.*");
+    int result12 = (result_file_name1 == 0 && result_pattern12 == 0) ? 0 : 1;
+    result_list = result_list->next;
+    file = (File_to_rename*)result_list->data;
+    int result_file_name2 = strcmp(file->filename, "test.h");
+    int result_pattern2 = strcmp(file->pattern, "*.*");
+    int result2 = (result_file_name2 == 0 && result_pattern2 == 0) ? 0 : 1;
+    result_list = result_list->next;
+    file = (File_to_rename*)result_list->data;
+    int result_file_name3 = strcmp(file->filename, "tost.txt");
+    int result_pattern31 = strcmp(file->pattern, "*.txt");
+    int result31 = (result_file_name3 == 0 && result_pattern31 == 0) ? 0 : 1;
+    result_list = result_list->next;
+    file = (File_to_rename*)result_list->data;
+    int result_pattern32 = strcmp(file->pattern, "*.*");
+    int result32 = (result_file_name3 == 0 && result_pattern32 == 0) ? 0 : 1;
+    result_list = result_list->next;
+    file = (File_to_rename*)result_list->data;
+    int result_pattern33 = strcmp(file->pattern, "tost.*");
+    int result33 = (result_file_name3 == 0 && result_pattern33 == 0) ? 0 : 1;
+    ASSERT_EQUAL(expect, result1);
+    ASSERT_EQUAL(expect, result12);
+    ASSERT_EQUAL(expect, result2);
+    ASSERT_EQUAL(expect, result31);
+    ASSERT_EQUAL(expect, result32);
+    ASSERT_EQUAL(expect, result33);
 }

@@ -206,11 +206,6 @@ void start(WINDOW* menu)
     return;
 }
 
-gint my_comparator(gconstpointer item1, gconstpointer item2)
-{
-    return g_ascii_strcasecmp(item1, item2);
-}
-
 void print_dir(WINDOW* sub, GList* dir_list, int* dir_cnt)
 {
     int y = getmaxy(sub);
@@ -303,7 +298,7 @@ char* select_dir(WINDOW* menu)
     mvwprintw(sub, 1, 1, "Выберите каталог:");
     char* dir = ".";
 
-    GList* dir_list = read_dir(".");
+    GList* dir_list = get_files_or_dirs_list(".", dirs);
     dir_list = g_list_sort(dir_list, my_comparator);
     size_t dir_len = g_list_length(dir_list);
 

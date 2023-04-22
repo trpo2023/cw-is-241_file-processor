@@ -213,13 +213,13 @@ int get_sample(char* sample, sample_parts* patterns)
     return success;
 }
 
-GList* add_sample(GList* sample_list, char* sample, int* exit_code)
+GList* add_sample(GList* patterns, char* sample, int* exit_code)
 {
     sample_parts* pattern = malloc(sizeof(sample_parts));
     *exit_code = get_sample(sample, pattern);
     if (*exit_code == 0) {
-        sample_list = g_list_append(sample_list, pattern);
+        patterns = g_list_append(patterns, pattern);
     }
 
-    return sample_list;
+    return patterns;
 }

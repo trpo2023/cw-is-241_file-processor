@@ -41,4 +41,4 @@ char* to_rename_pattern(char* sample);
 sample_parts split_sample(char* sample, sample_parts* patterns);
 // Разделить строку и записать в структуру
 int get_sample(char* sample, sample_parts* patterns);
-GList* add_sample(GList* sample_list, char* sample, int* exit_code);
+GList* add_sample(GList* patterns, char* sample, int* exit_code);

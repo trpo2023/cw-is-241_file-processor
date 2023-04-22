@@ -4,6 +4,7 @@
 
 #include "interface.h"
 #include <libfileproc/directory.h>
+#include <libfileproc/lexer.h>
 #include <libfileproc/rename.h>
 
 const char menu_items[5][71] = {
@@ -14,7 +15,7 @@ const char menu_items[5][71] = {
         "5) Выход из приложения (F10)           ",
 };
 
-GList* pattern_input(WINDOW* menu, GList* samples);
+GList* pattern_input(WINDOW* menu, GList* samples, GList** patterns);
 
 WINDOW* init_menu()
 {
@@ -174,11 +175,12 @@ void start(WINDOW* menu)
     char* current_dir = ".";
     Option option = {0};
     GList* samples = NULL;
+    GList* patterns = NULL;
     while ((result = item_select(menu, result)) != 4 && result != KEY_F(10)) {
         wrefresh(menu);
         switch (result) {
         case 0:
-            samples = pattern_input(menu, samples);
+            samples = pattern_input(menu, samples, &patterns);
             wattron(menu, A_STANDOUT);
             mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
             wattroff(menu, A_STANDOUT);
@@ -332,63 +334,61 @@ int print_samples(WINDOW* sub, GList* samples)
     return cnt;
 }
 
-GList* pattern_input(WINDOW* menu, GList* samples)
+GList* pattern_input(WINDOW* menu, GList* samples, GList** patterns)
 {
     int y, x;
     getmaxyx(menu, y, x);
     WINDOW* sub = init_sub_window(menu, y, x);
     mvwprintw(sub, 1, 1, "Введите шаблон:");
-    wrefresh(sub);
 
     getmaxyx(sub, y, x);
 
-    int max_npatterns = y - 3;
+    int max_nsamples = y - 3;
     curs_set(1);
     echo();
-    int cnt = 0;
+    int cnt = print_samples(sub, samples);
 
-    if (samples != NULL) {
-        cnt = print_samples(sub, samples);
-        wrefresh(sub);
-    }
-    mvwprintw(sub, 1, x - 10, "%d/%d", cnt, max_npatterns);
-    if (cnt == max_npatterns) {
+    mvwprintw(sub, 1, x - 10, "%d/%d", cnt, max_nsamples);
+    if (cnt == max_nsamples) {
         mvwprintw(sub, 1, 20, "МЕСТА НЕТ");
         curs_set(0);
         noecho();
         wgetch(sub);
 
         wclear(sub);
-        wrefresh(sub);
         delwin(sub);
         return samples;
     }
 
     char* str = malloc(x - 3);
     mvwgetnstr(sub, cnt + 2, 2, str, x - 3);
-    if (*str > 0) {
+
+    int exit_code;
+    *patterns = add_sample(*patterns, str, &exit_code);
+    if (exit_code == 0) {
         samples = g_list_append(samples, str);
-        mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_npatterns);
+        mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_nsamples);
+    } else {
+        mvwprintw(sub, cnt + 2, 1, "╳");
+        mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_nsamples);
     }
 
-    for (int i = cnt; i < max_npatterns && str[0] != '\0'; i++) {
+    for (int i = cnt; i < max_nsamples && str[0] != '\0'; i++) {
         str = malloc(x - 3);
-        if (i == 10) {
-            mvwprintw(sub, i + 2, 1, "╳");
-        }
         mvwgetnstr(sub, 2 + i, 2, str, x - 3);
-        if (*str > 0) {
+        *patterns = add_sample(*patterns, str, &exit_code);
+        if (exit_code == 0) {
             samples = g_list_append(samples, str);
-            mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_npatterns);
+        } else {
+            mvwprintw(sub, cnt + 2, 1, "╳");
         }
-        wrefresh(sub);
+        mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_nsamples);
     }
 
     curs_set(0);
     noecho();
 
     wclear(sub);
-    wrefresh(sub);
     delwin(sub);
 
     return samples;

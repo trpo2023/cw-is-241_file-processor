@@ -147,9 +147,10 @@ int check_rename_sample(char** string) // проверка шаблона для
     return success;
 }
 
-int check_sample_string(char* string) // проверка полной строки с шаблонами
+int check_sample_string(
+        char* input_string) // проверка полной строки с шаблонами
 {
-    char* test_string = string;
+    char* test_string = input_string;
     int search_sample = check_search_sample(&test_string);
     if (search_sample)
         return search_sample;
@@ -160,63 +161,63 @@ int check_sample_string(char* string) // проверка полной стро�
 }
 
 // Взятие отдельного паттерна из всей строки
-char* get_pattern(char* sample, char** pattern)
+char* get_pattern(char* input_string, char** pattern)
 {
     char* buffer = *pattern;
     while (1) {
-        if (*sample == ' ')
+        if (*input_string == ' ')
             break;
-        if (*sample == ':')
+        if (*input_string == ':')
             break;
-        if (*sample == '\0')
+        if (*input_string == '\0')
             break;
-        *buffer = *sample;
+        *buffer = *input_string;
         buffer++;
-        sample++;
+        input_string++;
     }
     *buffer = '\0';
-    return sample;
+    return input_string;
 }
 
 // Сдвинуть указатель к началу следующего паттерна
-char* to_rename_pattern(char* sample)
+char* to_rename_pattern(char* input_string)
 {
     while (1) {
-        if (*sample == ' ')
-            sample++;
-        else if (*sample == ':')
-            sample++;
+        if (*input_string == ' ')
+            input_string++;
+        else if (*input_string == ':')
+            input_string++;
         else
-            return sample;
+            return input_string;
     }
 }
 
 // Разбить строку на паттерны
-sample_parts split_sample(char* sample, sample_parts* patterns)
+sample_parts split_sample(char* input_string, sample_parts* patterns)
 {
-    sample = skip_space(sample);
-    sample = get_pattern(sample, &(patterns->search_pattern));
-    sample = to_rename_pattern(sample);
-    get_pattern(sample, &(patterns->rename_pattern));
+    input_string = skip_space(input_string);
+    input_string = get_pattern(input_string, &(patterns->search_pattern));
+    input_string = to_rename_pattern(input_string);
+    get_pattern(input_string, &(patterns->rename_pattern));
     return *patterns;
 }
 
 // Разделить строку и записать в структуру
-int get_sample(char* sample, sample_parts* patterns)
+int get_sample(char* input_string, sample_parts* patterns)
 {
-    int check = check_sample_string(sample);
+    int check = check_sample_string(input_string);
     if (check)
         return check;
     patterns->search_pattern = malloc(256);
     patterns->rename_pattern = malloc(256);
-    *patterns = split_sample(sample, patterns);
+    *patterns = split_sample(input_string, patterns);
     return success;
 }
 
-GList* add_sample(GList* patterns, char* sample, int* exit_code)
+GList* add_sample(GList* patterns, char* input_string, int* exit_code)
 {
     sample_parts* pattern = malloc(sizeof(sample_parts));
-    *exit_code = get_sample(sample, pattern);
+    *exit_code = get_sample(input_string, pattern);
     if (*exit_code == 0) {
         patterns = g_list_append(patterns, pattern);
     }

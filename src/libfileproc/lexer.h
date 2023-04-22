@@ -34,11 +34,11 @@ int check_search_sample(char** string); // проверка шаблона дл�
 int check_rename_sample(char** string); // проверка шаблона для переименовывания
 int check_sample_string(char* string); // проверка полной строки с шаблонами
 // Взятие отдельного паттерна из всей строки
-char* get_pattern(char* sample, char** pattern);
+char* get_pattern(char* input_string, char** pattern);
 // Сдвинуть указатель к началу следующего паттерна
-char* to_rename_pattern(char* sample);
+char* to_rename_pattern(char* input_string);
 // Разбить строку на паттерны
-sample_parts split_sample(char* sample, sample_parts* patterns);
+sample_parts split_sample(char* input_string, sample_parts* patterns);
 // Разделить строку и записать в структуру
-int get_sample(char* sample, sample_parts* patterns);
-GList* add_sample(GList* sample_list, char* sample, int* exit_code);
+int get_sample(char* input_string, sample_parts* patterns);
+GList* add_sample(GList* patterns, char* input_string, int* exit_code);

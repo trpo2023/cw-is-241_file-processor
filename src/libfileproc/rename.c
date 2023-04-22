@@ -59,6 +59,19 @@ void change_register(char* name, unsigned int status)
     }
 }
 
+char* get_name(char* file_path)
+{
+    char* name = file_path;
+    int i;
+    for (i = 0; file_path[i] != '\0'; i++) {
+        if (file_path[i] == '/') {
+            name = &file_path[i];
+        }
+    }
+
+    return name;
+}
+
 int get_correct_name(char* old_name, char* new_name, char* dest, Option* opt)
 {
     if (file_exist(old_name) == 1)
@@ -84,14 +97,16 @@ int get_correct_name(char* old_name, char* new_name, char* dest, Option* opt)
     strncpy(newest_name, new_name, name_len);
     newest_name[name_len] = '\0';
 
-    change_register(newest_name, opt->name_register);
+    char* name = get_name(newest_name);
+
+    change_register(name, opt->name_register);
     if (suffix_len == 0)
         sprintf(dest, "%s", newest_name);
     else
         sprintf(dest, "%s%s", newest_name, suffix);
 
     while (file_exist(dest) == 0) {
-        change_register(newest_name, opt->name_register);
+        change_register(name, opt->name_register);
         if (suffix_len == 0)
             sprintf(dest, "%s (%d)", newest_name, counter++);
         else

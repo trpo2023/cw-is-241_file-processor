@@ -20,6 +20,19 @@ CTEST(rename, get_suffix)
     ASSERT_STR(expect, result);
 }
 
+CTEST(rename, get_name)
+{
+    char file_path[MAX_LEN] = "/usr/somerdirs/file";
+    char* result = get_name(file_path);
+    char* expect = "/file";
+    ASSERT_STR(expect, result);
+
+    char file_p[MAX_LEN] = "file";
+    char* result1 = get_name(file_p);
+    char* expect2 = "file";
+    ASSERT_STR(expect2, result1);
+}
+
 CTEST(rename, get_new_name)
 {
     char* name = "one_piece.txt";

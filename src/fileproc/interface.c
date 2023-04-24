@@ -182,7 +182,7 @@ void process(WINDOW* sub, GList* sample, char* dir_path, Option* opt)
     sprintf(str,
             "Успешно! Файлов переименовано: %d!",
             g_list_length(renamed_file_list));
-    mvwprintw(sub, 3, 13, str);
+    mvwprintw(sub, 3, 13, "%s", str);
 }
 
 void start(WINDOW* menu)
@@ -217,6 +217,13 @@ void start(WINDOW* menu)
             process(sub, samples, current_dir, &option);
             wrefresh(sub);
             delwin(sub);
+            wattron(menu, A_STANDOUT);
+            mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
+            wattroff(menu, A_STANDOUT);
+            g_list_free(samples);
+            g_list_free(input_strings);
+            samples = NULL;
+            input_strings = NULL;
             break;
         case 3:
             select_option(menu, &option);

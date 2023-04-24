@@ -79,7 +79,7 @@ int get_correct_name(char* old_name, char* new_name, char* dest, Option* opt)
 
     if (strcmp(old_name, new_name) == 0) {
         strcpy(dest, old_name);
-        return 1;
+        return -1;
     }
 
     int counter = 1;
@@ -116,13 +116,22 @@ int get_correct_name(char* old_name, char* new_name, char* dest, Option* opt)
     return 0;
 }
 
-char* rename_file(char* old_name, char* new_name, char* renamed, Option* opt)
+char* rename_file(char* old_path, char* new_name, char* renamed, Option* opt)
 {
-    int result = get_correct_name(old_name, new_name, renamed, opt);
+    char* old_name = get_name(old_path);
+    char* name = get_name(new_name);
+    char new_path[MAX_LEN] = {0};
+    if (old_name != old_path && name == new_name) {
+        strncpy(new_path, old_path, old_name - old_path);
+        strcat(new_path, "/");
+        strcat(new_path, new_name);
+        new_name = new_path;
+    }
+    int result = get_correct_name(old_path, new_name, renamed, opt);
     if (result == -1)
         return NULL;
 
-    rename(old_name, renamed);
+    rename(old_path, renamed);
     return renamed;
 }
 

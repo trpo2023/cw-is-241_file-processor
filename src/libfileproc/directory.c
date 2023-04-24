@@ -72,7 +72,8 @@ GList* get_files_patterns_list(GList* filesname, GList* samples)
     for (GList* filename = filesname; filename != NULL;
          filename = filename->next) {
         char* name = get_name(filename->data);
-        name++;
+        if (name != filename->data)
+            name++;
         for (GList* sample = samples; sample != NULL; sample = sample->next) {
             sample_parts* current_pattern_names = sample->data;
             if (is_file_match_pattern(

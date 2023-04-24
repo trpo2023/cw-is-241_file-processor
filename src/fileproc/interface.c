@@ -6,6 +6,7 @@
 #include <libfileproc/directory.h>
 #include <libfileproc/lexer.h>
 #include <libfileproc/rename.h>
+#include <libfileproc/running.h>
 
 const char menu_items[5][71] = {
         "1) Ввести шаблоны                      ",
@@ -164,6 +165,26 @@ void select_option(WINDOW* menu, Option* opt)
     }
 }
 
+void process(WINDOW* sub, GList* sample, char* dir_path, Option* opt)
+{
+    GList* renamed_file_list = NULL;
+    if (g_list_length(sample) == 0) {
+        mvwprintw(
+                sub,
+                1,
+                1,
+                "Сперва введите шаблоны, а потом запускайте переименование");
+        return;
+    }
+    mvwprintw(sub, 1, 15, "Идет процесс переименования...");
+    renamed_file_list = rename_and_get_renamed_list(sample, dir_path, opt);
+    char str[MAX_LEN];
+    sprintf(str,
+            "Успешно! Файлов переименовано: %d!",
+            g_list_length(renamed_file_list));
+    mvwprintw(sub, 3, 13, "%s", str);
+}
+
 void start(WINDOW* menu)
 {
     WINDOW* sub;
@@ -193,9 +214,16 @@ void start(WINDOW* menu)
             break;
         case 2:
             sub = init_sub_window(menu, row, col);
-            mvwprintw(sub, 1, 1, "ЗАПУСК");
+            process(sub, samples, current_dir, &option);
             wrefresh(sub);
             delwin(sub);
+            wattron(menu, A_STANDOUT);
+            mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
+            wattroff(menu, A_STANDOUT);
+            g_list_free(samples);
+            g_list_free(input_strings);
+            samples = NULL;
+            input_strings = NULL;
             break;
         case 3:
             select_option(menu, &option);

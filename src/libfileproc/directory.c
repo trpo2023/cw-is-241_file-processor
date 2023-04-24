@@ -4,6 +4,7 @@
 
 #include <libfileproc/directory.h>
 #include <libfileproc/lexer.h>
+#include <libfileproc/rename.h>
 
 gint my_comparator(gconstpointer item1, gconstpointer item2)
 {
@@ -21,11 +22,17 @@ GList* get_files_or_dirs_list(char* path, int attr)
 
     while ((file = readdir(dir)) != NULL) {
         char* name = malloc(sizeof(char) * MAX_LEN);
-        strcpy(name, file->d_name);
-        if ((file->d_type & attr) == attr)
+        if ((file->d_type & DT_REG) == DT_REG && strcmp(".", path) != 0) {
+            strcpy(name, path);
+            strcat(name, "/");
+            strcat(name, file->d_name);
+        } else {
+            strcpy(name, file->d_name);
+        }
+        if ((file->d_type & attr) == attr) {
             list = g_list_append(list, name);
+        }
     }
-
     closedir(dir);
     return list;
 }
@@ -64,14 +71,20 @@ GList* get_files_patterns_list(GList* filesname, GList* samples)
     GList* files_and_patterns_list = NULL;
     for (GList* filename = filesname; filename != NULL;
          filename = filename->next) {
-        for (GList* sample = samples; sample != NULL; sample = sample->next){
+        char* name = get_name(filename->data);
+        name++;
+        for (GList* sample = samples; sample != NULL; sample = sample->next) {
             sample_parts* current_pattern_names = sample->data;
-            if (is_file_match_pattern(filename->data, current_pattern_names->search_pattern)) {
+            if (is_file_match_pattern(
+                        name, current_pattern_names->search_pattern)) {
                 File_to_rename* p = malloc(sizeof(File_to_rename));
-                list_data(p, filename->data, current_pattern_names->rename_pattern);
+                list_data(
+                        p,
+                        filename->data,
+                        current_pattern_names->rename_pattern);
                 files_and_patterns_list
                         = g_list_append(files_and_patterns_list, p);
-                        break;
+                break;
             }
         }
     }

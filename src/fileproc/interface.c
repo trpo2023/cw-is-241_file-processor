@@ -113,12 +113,12 @@ void print_opt(WINDOW* sub, Option* opt, int i)
 
 void select_option(WINDOW* menu, Option* opt)
 {
-    const char* options[] = {"Регистр", "<- вернуться обратно в меню"};
+    const char* options[] = {"Регистр", "Restore defaults", "<- вернуться обратно в меню"};
     int y, x;
     getmaxyx(menu, y, x);
     WINDOW* sub = init_sub_window(menu, y, x);
     mvwprintw(sub, 1, 1, "Выберите опции:");
-    int options_cnt = 1; // 0 = 1 :)
+    int options_cnt = 2; // 0 = 1 :)
 
     wattron(sub, A_STANDOUT);
     mvwprintw(sub, 3, 2, "%s", options[0]);
@@ -154,6 +154,10 @@ void select_option(WINDOW* menu, Option* opt)
                 wrefresh(sub);
                 break;
             case 1:
+                wclear(sub);
+                wrefresh(sub);
+                return;
+            case 2:
                 wclear(sub);
                 wrefresh(sub);
                 return;

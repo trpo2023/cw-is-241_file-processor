@@ -6,6 +6,7 @@
 #include <libfileproc/directory.h>
 #include <libfileproc/lexer.h>
 #include <libfileproc/rename.h>
+#include <libfileproc/running.h>
 
 const char menu_items[5][71] = {
         "1) Ввести шаблоны                      ",
@@ -164,6 +165,19 @@ void select_option(WINDOW* menu, Option* opt)
     }
 }
 
+void process(WINDOW* sub, GList* sample, char* dir_path, Option* opt){
+    GList* renamed_file_list = NULL;
+    if (g_list_length(sample) == 0){
+        mvwprintw(sub, 1, 1, "Сперва введите шаблоны, а потом запускайте переименование");
+        return;
+    }
+    mvwprintw(sub, 3, 1, "Идет процесс переименования...\n");
+    renamed_file_list = rename_and_get_renamed_list(sample, dir_path, opt);
+    char str[MAX_LEN];
+    sprintf(str, "Успешно! Всего переименовано %d файлов!", g_list_length(renamed_file_list));
+    mvwprintw(sub, 5, 1, str);  
+}
+
 void start(WINDOW* menu)
 {
     WINDOW* sub;
@@ -193,7 +207,12 @@ void start(WINDOW* menu)
             break;
         case 2:
             sub = init_sub_window(menu, row, col);
-            mvwprintw(sub, 1, 1, "ЗАПУСК");
+            GList* sample = NULL;
+            sample_parts* part = malloc(sizeof(sample_parts));
+            part->search_pattern = "*.jpg";
+            part->rename_pattern = "*.txt";
+            sample = g_list_append(sample, part);
+            process(sub, sample, current_dir,  &option);
             wrefresh(sub);
             delwin(sub);
             break;

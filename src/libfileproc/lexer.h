@@ -42,3 +42,4 @@ sample_parts split_sample(char* input_string, sample_parts* patterns);
 // Разделить строку и записать в структуру
 int get_sample(char* input_string, sample_parts* patterns);
 GList* add_sample(GList* patterns, char* input_string, int* exit_code);
+void free_sample_parts(void* patterns);

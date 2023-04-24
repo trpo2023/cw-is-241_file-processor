@@ -111,9 +111,16 @@ void print_opt(WINDOW* sub, Option* opt, int i)
     }
 }
 
-void select_option(WINDOW* menu, Option* opt)
+void select_option(
+        WINDOW* menu,
+        Option* opt,
+        GList** input_strings,
+        GList** samples,
+        char** current_dir)
 {
-    const char* options[] = {"Регистр", "Restore defaults", "<- вернуться обратно в меню"};
+    char* default_dir = ".";
+    const char* options[]
+            = {"Регистр", "Restore defaults", "<- вернуться обратно в меню"};
     int y, x;
     getmaxyx(menu, y, x);
     WINDOW* sub = init_sub_window(menu, y, x);
@@ -154,6 +161,22 @@ void select_option(WINDOW* menu, Option* opt)
                 wrefresh(sub);
                 break;
             case 1:
+                *current_dir = default_dir;
+                mvwprintw(
+                        menu,
+                        y - 2,
+                        2,
+                        "Выбранный каталог: %-30s",
+                        *current_dir);
+                opt->name_register = R_DEFAULT;
+                if (*input_strings != NULL) {
+                    g_list_free_full(*input_strings, free_input_string);
+                    *input_strings = NULL;
+                }
+                if (*samples != NULL) {
+                    g_list_free_full(*samples, free_sample_parts);
+                    *samples = NULL;
+                }
                 wclear(sub);
                 wrefresh(sub);
                 return;
@@ -230,7 +253,8 @@ void start(WINDOW* menu)
             input_strings = NULL;
             break;
         case 3:
-            select_option(menu, &option);
+            select_option(
+                    menu, &option, &input_strings, &samples, &current_dir);
             wattron(menu, A_STANDOUT);
             mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
             wattroff(menu, A_STANDOUT);
@@ -422,4 +446,9 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
     delwin(sub);
 
     return samples;
+}
+
+void free_input_string(void* str)
+{
+    free(str);
 }

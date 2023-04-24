@@ -224,3 +224,9 @@ GList* add_sample(GList* patterns, char* input_string, int* exit_code)
 
     return patterns;
 }
+
+void free_sample_parts(void* patterns)
+{
+    free(((sample_parts*)patterns)->search_pattern);
+    free(((sample_parts*)patterns)->rename_pattern);
+}

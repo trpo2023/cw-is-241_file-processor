@@ -16,6 +16,8 @@ const char menu_items[5][71] = {
         "5) Выход из приложения (F10)           ",
 };
 
+void clean_data(Option* opt, GList** input_strings, GList** samples);
+
 WINDOW* init_menu()
 {
     initscr();
@@ -168,15 +170,7 @@ void select_option(
                         2,
                         "Выбранный каталог: %-30s",
                         *current_dir);
-                opt->name_register = R_DEFAULT;
-                if (*input_strings != NULL) {
-                    g_list_free_full(*input_strings, free_input_string);
-                    *input_strings = NULL;
-                }
-                if (*samples != NULL) {
-                    g_list_free_full(*samples, free_sample_parts);
-                    *samples = NULL;
-                }
+                clean_data(opt, input_strings, samples);
                 wclear(sub);
                 wrefresh(sub);
                 return;
@@ -451,4 +445,17 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
 void free_input_string(void* str)
 {
     free(str);
+}
+
+void clean_data(Option* opt, GList** input_strings, GList** samples)
+{
+    opt->name_register = R_DEFAULT;
+    if (*input_strings != NULL) {
+        g_list_free_full(*input_strings, free_input_string);
+        *input_strings = NULL;
+    }
+    if (*samples != NULL) {
+        g_list_free_full(*samples, free_sample_parts);
+        *samples = NULL;
+    }
 }

@@ -3,6 +3,7 @@
 #include <sys/types.h>
 
 #include <libfileproc/directory.h>
+#include <libfileproc/lexer.h>
 
 gint my_comparator(gconstpointer item1, gconstpointer item2)
 {
@@ -19,8 +20,10 @@ GList* get_files_or_dirs_list(char* path, int attr)
     }
 
     while ((file = readdir(dir)) != NULL) {
+        char* name = malloc(sizeof(char) * MAX_LEN);
+        strcpy(name, file->d_name);
         if ((file->d_type & attr) == attr)
-            list = g_list_append(list, file->d_name);
+            list = g_list_append(list, name);
     }
 
     closedir(dir);
@@ -56,18 +59,19 @@ void list_data(File_to_rename* p, void* filename_data, void* pattern_data)
     p->pattern = pattern_data;
 }
 
-GList* get_files_patterns_list(GList* filesname, GList* patterns)
+GList* get_files_patterns_list(GList* filesname, GList* samples)
 {
     GList* files_and_patterns_list = NULL;
     for (GList* filename = filesname; filename != NULL;
          filename = filename->next) {
-        for (GList* pattern = patterns; pattern != NULL;
-             pattern = pattern->next) {
-            if (is_file_match_pattern(filename->data, pattern->data)) {
+        for (GList* sample = samples; sample != NULL; sample = sample->next){
+            sample_parts* current_pattern_names = sample->data;
+            if (is_file_match_pattern(filename->data, current_pattern_names->search_pattern)) {
                 File_to_rename* p = malloc(sizeof(File_to_rename));
-                list_data(p, filename->data, pattern->data);
+                list_data(p, filename->data, current_pattern_names->rename_pattern);
                 files_and_patterns_list
                         = g_list_append(files_and_patterns_list, p);
+                        break;
             }
         }
     }

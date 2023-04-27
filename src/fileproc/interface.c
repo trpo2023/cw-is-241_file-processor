@@ -211,6 +211,7 @@ void process(WINDOW* sub, GList* sample, char* dir_path, Option* opt)
     sprintf(str,
             "Успешно! Файлов переименовано: %d!",
             g_list_length(renamed_file_list));
+    g_list_free_full(renamed_file_list, free_renamed_files);
     mvwprintw(sub, 3, 13, "%s", str);
 }
 
@@ -249,10 +250,7 @@ void start(WINDOW* menu)
             wattron(menu, A_STANDOUT);
             mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
             wattroff(menu, A_STANDOUT);
-            g_list_free(samples);
-            g_list_free(input_strings);
-            samples = NULL;
-            input_strings = NULL;
+            clean_data(&option, &input_strings, &samples);
             break;
         case 3:
             select_option(menu, &option, &input_strings, &samples, current_dir);
@@ -263,6 +261,7 @@ void start(WINDOW* menu)
         }
     }
 
+    clean_data(&option, &input_strings, &samples);
     return;
 }
 
@@ -425,27 +424,44 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
         return samples;
     }
 
-    char* str = malloc(x - 3);
+    char* str = malloc(x - 2);
     mvwgetnstr(sub, cnt + 2, 2, str, x - 3);
 
     int exit_code;
-    samples = add_sample(samples, str, &exit_code);
-    if (exit_code == 0) {
-        *input_strings = g_list_append(*input_strings, str);
-        mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
+    if (str[0] != '\0') {
+        samples = add_sample(samples, str, &exit_code);
+        if (exit_code == 0) {
+            *input_strings = g_list_append(*input_strings, str);
+            mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
+        } else {
+            free(str);
+            mvwprintw(sub, cnt + 2, 1, "╳");
+            mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
+        }
     } else {
-        mvwprintw(sub, cnt + 2, 1, "╳");
-        mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
+        free(str);
+        curs_set(0);
+        noecho();
+
+        wclear(sub);
+        delwin(sub);
+
+        return samples;
     }
 
     for (int i = cnt; i < max_ninstr && str[0] != '\0'; i++) {
         str = malloc(x - 3);
         mvwgetnstr(sub, 2 + i, 2, str, x - 3);
+        if (str[0] == '\0') {
+            free(str);
+            break;
+        }
         samples = add_sample(samples, str, &exit_code);
         if (exit_code == 0) {
             *input_strings = g_list_append(*input_strings, str);
         } else {
             mvwprintw(sub, cnt + 2, 1, "╳");
+            free(str);
         }
         mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
     }

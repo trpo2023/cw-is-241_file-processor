@@ -8,13 +8,6 @@
 #include <libfileproc/lexer.h>
 #include <libfileproc/rename.h>
 
-void clear_list_data(GSList* list)
-{
-    for (GSList* i = list; i != NULL; i = i->next) {
-        free(i->data);
-    }
-}
-
 // driver
 int main()
 {
@@ -23,6 +16,7 @@ int main()
     start(menu);
 
     delwin(menu);
+    delwin(stdscr);
     endwin();
 
     return 0;

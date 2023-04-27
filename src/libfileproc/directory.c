@@ -31,6 +31,8 @@ GList* get_files_or_dirs_list(char* path, int attr)
         }
         if ((file->d_type & attr) == attr) {
             list = g_list_append(list, name);
+        } else {
+            free(name);
         }
     }
     closedir(dir);
@@ -62,7 +64,9 @@ int is_file_match_pattern(char* filename, char* pattern)
 
 void list_data(File_to_rename* p, void* filename_data, void* pattern_data)
 {
-    p->filename = filename_data;
+    char* name = malloc(sizeof(char) * MAX_LEN);
+    strcpy(name, filename_data);
+    p->filename = name;
     p->pattern = pattern_data;
 }
 

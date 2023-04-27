@@ -118,7 +118,7 @@ void select_option(
         Option* opt,
         GList** input_strings,
         GList** samples,
-        char** current_dir)
+        char* current_dir)
 {
     char* default_dir = ".";
     const char* options[]
@@ -163,20 +163,22 @@ void select_option(
                 wrefresh(sub);
                 break;
             case 1:
-                *current_dir = default_dir;
+                strcpy(current_dir, default_dir);
                 mvwprintw(
                         menu,
                         y - 2,
                         2,
                         "Выбранный каталог: %-30s",
-                        *current_dir);
+                        current_dir);
                 clean_data(opt, input_strings, samples);
                 wclear(sub);
                 wrefresh(sub);
+                delwin(sub);
                 return;
             case 2:
                 wclear(sub);
                 wrefresh(sub);
+                delwin(sub);
                 return;
             }
         }
@@ -184,6 +186,12 @@ void select_option(
         mvwprintw(sub, i + 3, 2, "%s", options[i]);
         wattroff(sub, A_STANDOUT);
     }
+}
+
+void free_renamed_files(void* data)
+{
+    free(((Renamed_file*)data)->new_name);
+    free(data);
 }
 
 void process(WINDOW* sub, GList* sample, char* dir_path, Option* opt)
@@ -203,6 +211,7 @@ void process(WINDOW* sub, GList* sample, char* dir_path, Option* opt)
     sprintf(str,
             "Успешно! Файлов переименовано: %d!",
             g_list_length(renamed_file_list));
+    g_list_free_full(renamed_file_list, free_renamed_files);
     mvwprintw(sub, 3, 13, "%s", str);
 }
 
@@ -212,7 +221,7 @@ void start(WINDOW* menu)
     int row, col;
     getmaxyx(menu, row, col);
     int result = 0;
-    char* current_dir = ".";
+    char current_dir[MAX_LEN] = ".";
     Option option = {0};
     GList* input_strings = NULL;
     GList* samples = NULL;
@@ -226,7 +235,7 @@ void start(WINDOW* menu)
             wattroff(menu, A_STANDOUT);
             break;
         case 1:
-            current_dir = select_dir(menu);
+            select_dir(menu, current_dir);
             mvwprintw(
                     menu, row - 2, 2, "Выбранный каталог: %-30s", current_dir);
             wattron(menu, A_STANDOUT);
@@ -241,14 +250,10 @@ void start(WINDOW* menu)
             wattron(menu, A_STANDOUT);
             mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
             wattroff(menu, A_STANDOUT);
-            g_list_free(samples);
-            g_list_free(input_strings);
-            samples = NULL;
-            input_strings = NULL;
+            clean_data(&option, &input_strings, &samples);
             break;
         case 3:
-            select_option(
-                    menu, &option, &input_strings, &samples, &current_dir);
+            select_option(menu, &option, &input_strings, &samples, current_dir);
             wattron(menu, A_STANDOUT);
             mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
             wattroff(menu, A_STANDOUT);
@@ -256,6 +261,7 @@ void start(WINDOW* menu)
         }
     }
 
+    clean_data(&option, &input_strings, &samples);
     return;
 }
 
@@ -343,7 +349,12 @@ char* get_item(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
     return (char*)dir_list->data;
 }
 
-char* select_dir(WINDOW* menu)
+void free_input_string(void* str)
+{
+    free(str);
+}
+
+char* select_dir(WINDOW* menu, char* current_string)
 {
     int y, x;
     getmaxyx(menu, y, x);
@@ -366,9 +377,14 @@ char* select_dir(WINDOW* menu)
 
     dir = get_item(sub, dir_list, y - 5, dir_len, dir_cnt);
 
+    strcpy(current_string, dir);
+
     wclear(sub);
     wrefresh(sub);
-    return dir;
+    delwin(sub);
+    g_list_free_full(dir_list, free_input_string);
+
+    return current_string;
 }
 
 int print_input_strings(WINDOW* sub, GList* input_strings)
@@ -408,27 +424,44 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
         return samples;
     }
 
-    char* str = malloc(x - 3);
+    char* str = malloc(x - 2);
     mvwgetnstr(sub, cnt + 2, 2, str, x - 3);
 
     int exit_code;
-    samples = add_sample(samples, str, &exit_code);
-    if (exit_code == 0) {
-        *input_strings = g_list_append(*input_strings, str);
-        mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
+    if (str[0] != '\0') {
+        samples = add_sample(samples, str, &exit_code);
+        if (exit_code == 0) {
+            *input_strings = g_list_append(*input_strings, str);
+            mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
+        } else {
+            free(str);
+            mvwprintw(sub, cnt + 2, 1, "╳");
+            mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
+        }
     } else {
-        mvwprintw(sub, cnt + 2, 1, "╳");
-        mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
+        free(str);
+        curs_set(0);
+        noecho();
+
+        wclear(sub);
+        delwin(sub);
+
+        return samples;
     }
 
     for (int i = cnt; i < max_ninstr && str[0] != '\0'; i++) {
         str = malloc(x - 3);
         mvwgetnstr(sub, 2 + i, 2, str, x - 3);
+        if (str[0] == '\0') {
+            free(str);
+            break;
+        }
         samples = add_sample(samples, str, &exit_code);
         if (exit_code == 0) {
             *input_strings = g_list_append(*input_strings, str);
         } else {
             mvwprintw(sub, cnt + 2, 1, "╳");
+            free(str);
         }
         mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
     }
@@ -440,11 +473,6 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
     delwin(sub);
 
     return samples;
-}
-
-void free_input_string(void* str)
-{
-    free(str);
 }
 
 void clean_data(Option* opt, GList** input_strings, GList** samples)

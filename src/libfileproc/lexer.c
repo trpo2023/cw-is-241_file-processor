@@ -229,4 +229,5 @@ void free_sample_parts(void* patterns)
 {
     free(((sample_parts*)patterns)->search_pattern);
     free(((sample_parts*)patterns)->rename_pattern);
+    free((sample_parts*)patterns);
 }

@@ -190,7 +190,7 @@ void select_option(
 
 void free_renamed_files(void* data)
 {
-    free(((Renamed_file*)data)->new_name);
+    free(((Renamed_file*)data)->new_path);
     free(data);
 }
 

@@ -13,11 +13,11 @@ int file_exist(char* file_path)
 {
     FILE* file = fopen(file_path, "r");
     if (!file) {
-        return 1;
+        return 0;
     }
 
     fclose(file);
-    return 0;
+    return 1;
 }
 
 char* get_suffix(char* file_name)
@@ -72,13 +72,13 @@ char* get_name(char* file_path)
     return name;
 }
 
-int get_correct_name(char* old_name, char* new_name, char* dest, Option* opt)
+int get_correct_name(char* old_path, char* new_name, char* dest, Option* opt)
 {
-    if (file_exist(old_name) == 1)
+    if (file_exist(old_path) == 0)
         return -1;
 
-    if (strcmp(old_name, new_name) == 0) {
-        strcpy(dest, old_name);
+    if (strcmp(old_path, new_name) == 0) {
+        strcpy(dest, old_path);
         return -1;
     }
 
@@ -105,7 +105,7 @@ int get_correct_name(char* old_name, char* new_name, char* dest, Option* opt)
     else
         sprintf(dest, "%s%s", newest_name, suffix);
 
-    while (file_exist(dest) == 0) {
+    while (file_exist(dest) == 1) {
         change_register(name, opt->name_register);
         if (suffix_len == 0)
             sprintf(dest, "%s (%d)", newest_name, counter++);
@@ -189,17 +189,17 @@ GList* rename_pair(GList* pair, GList* renamed_files, Option* opt)
 
     // will be free, don't worry
     Renamed_file* renamed = malloc(sizeof(Renamed_file));
-    renamed->old_name = old_name;
-    renamed->new_name = newest_name;
+    renamed->old_path = old_name;
+    renamed->new_path = newest_name;
 
     renamed_files = g_list_append(renamed_files, renamed);
     return renamed_files;
 }
 
-GList* rename_files(GList* pair_list, Option* opt)
+GList* rename_files(GList* to_rename_list, Option* opt)
 {
     GList* renamed_files = NULL;
-    for (GList* i = pair_list; i != NULL; i = i->next) {
+    for (GList* i = to_rename_list; i != NULL; i = i->next) {
         renamed_files = rename_pair(i, renamed_files, opt);
     }
     return renamed_files;

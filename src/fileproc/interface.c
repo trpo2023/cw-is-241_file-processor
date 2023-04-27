@@ -118,7 +118,7 @@ void select_option(
         Option* opt,
         GList** input_strings,
         GList** samples,
-        char** current_dir)
+        char* current_dir)
 {
     char* default_dir = ".";
     const char* options[]
@@ -163,20 +163,22 @@ void select_option(
                 wrefresh(sub);
                 break;
             case 1:
-                *current_dir = default_dir;
+                strcpy(current_dir, default_dir);
                 mvwprintw(
                         menu,
                         y - 2,
                         2,
                         "Выбранный каталог: %-30s",
-                        *current_dir);
+                        current_dir);
                 clean_data(opt, input_strings, samples);
                 wclear(sub);
                 wrefresh(sub);
+                delwin(sub);
                 return;
             case 2:
                 wclear(sub);
                 wrefresh(sub);
+                delwin(sub);
                 return;
             }
         }
@@ -184,6 +186,12 @@ void select_option(
         mvwprintw(sub, i + 3, 2, "%s", options[i]);
         wattroff(sub, A_STANDOUT);
     }
+}
+
+void free_renamed_files(void* data)
+{
+    free(((Renamed_file*)data)->new_name);
+    free(data);
 }
 
 void process(WINDOW* sub, GList* sample, char* dir_path, Option* opt)
@@ -212,7 +220,7 @@ void start(WINDOW* menu)
     int row, col;
     getmaxyx(menu, row, col);
     int result = 0;
-    char* current_dir = ".";
+    char current_dir[MAX_LEN] = ".";
     Option option = {0};
     GList* input_strings = NULL;
     GList* samples = NULL;
@@ -226,7 +234,7 @@ void start(WINDOW* menu)
             wattroff(menu, A_STANDOUT);
             break;
         case 1:
-            current_dir = select_dir(menu);
+            select_dir(menu, current_dir);
             mvwprintw(
                     menu, row - 2, 2, "Выбранный каталог: %-30s", current_dir);
             wattron(menu, A_STANDOUT);
@@ -247,8 +255,7 @@ void start(WINDOW* menu)
             input_strings = NULL;
             break;
         case 3:
-            select_option(
-                    menu, &option, &input_strings, &samples, &current_dir);
+            select_option(menu, &option, &input_strings, &samples, current_dir);
             wattron(menu, A_STANDOUT);
             mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
             wattroff(menu, A_STANDOUT);
@@ -343,7 +350,12 @@ char* get_item(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
     return (char*)dir_list->data;
 }
 
-char* select_dir(WINDOW* menu)
+void free_input_string(void* str)
+{
+    free(str);
+}
+
+char* select_dir(WINDOW* menu, char* current_string)
 {
     int y, x;
     getmaxyx(menu, y, x);
@@ -366,9 +378,14 @@ char* select_dir(WINDOW* menu)
 
     dir = get_item(sub, dir_list, y - 5, dir_len, dir_cnt);
 
+    strcpy(current_string, dir);
+
     wclear(sub);
     wrefresh(sub);
-    return dir;
+    delwin(sub);
+    g_list_free_full(dir_list, free_input_string);
+
+    return current_string;
 }
 
 int print_input_strings(WINDOW* sub, GList* input_strings)
@@ -440,11 +457,6 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
     delwin(sub);
 
     return samples;
-}
-
-void free_input_string(void* str)
-{
-    free(str);
 }
 
 void clean_data(Option* opt, GList** input_strings, GList** samples)

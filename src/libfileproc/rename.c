@@ -188,7 +188,7 @@ GList* rename_pair(GList* pair, GList* renamed_files, Option* opt)
         return renamed_files;
     }
 
-    Renamed_file* renamed = malloc(sizeof(Renamed_file));
+    RenamedFile* renamed = malloc(sizeof(RenamedFile));
     renamed->old_path = old_name;
     renamed->new_path = newest_name;
 

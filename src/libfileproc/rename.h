@@ -5,7 +5,7 @@
 typedef struct {
     char* old_path; // Относительный путь к файлу до переименования
     char* new_path; // Относительный путь к файлу после переименония
-} Renamed_file;
+} RenamedFile;
 
 enum Register { R_DEFAULT, R_LOW, R_HIGH };
 

@@ -67,20 +67,21 @@ WINDOW* init_menu()
     return win;
 }
 
-int item_select(WINDOW* menu, int i)
+int select_menu_items(WINDOW* menu, int i)
 {
     int y = getmaxy(menu);
     int ch;
+    int max_items = 4;
     while ((ch = wgetch(menu)) != KEY_F(10)) {
         mvwprintw(menu, i + 1, 2, "%s", menu_items[i]);
         switch (ch) {
         case KEY_UP:
             i--;
-            i = (i < 0) ? 4 : i;
+            i = (i < 0) ? max_items : i;
             break;
         case KEY_DOWN:
             i++;
-            i = (i > 4) ? 0 : i;
+            i = (i > max_items) ? 0 : i;
             break;
         case 10: // KEY_ENTER
             return i;
@@ -231,7 +232,8 @@ void start(WINDOW* menu)
     Option option = {0};
     GList* input_strings = NULL;
     GList* samples = NULL;
-    while ((result = item_select(menu, result)) != 4 && result != KEY_F(10)) {
+    while ((result = select_menu_items(menu, result)) != 4
+           && result != KEY_F(10)) {
         wrefresh(menu);
         switch (result) {
         case 0:

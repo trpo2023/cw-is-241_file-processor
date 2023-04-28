@@ -8,12 +8,12 @@
 #include <libfileproc/rename.h>
 #include <libfileproc/running.h>
 
-const char menu_items[5][71] = {
-        "1) Ввести шаблоны                      ",
-        "2) Выбрать каталог                     ",
-        "3) Запустить массовое переименование   ",
-        "4) Опции                               ",
-        "5) Выход из приложения (F10)           ",
+const char* menu_items[] = {
+        "1) Ввести шаблоны",
+        "2) Выбрать каталог",
+        "3) Запустить массовое переименование",
+        "4) Опции",
+        "5) Выход из приложения (F10)",
 };
 
 const char* options[] = {
@@ -91,7 +91,7 @@ int select_menu_items(WINDOW* menu, int i)
         }
 
         mvwprintw_highlite(menu, i + 1, 2, menu_items[i]);
-        mvwprintw(menu, y - 3, 2, "%s", menu_items[i]);
+        mvwprintw(menu, y - 3, 2, "%-100s", menu_items[i]);
     }
 
     return KEY_F(10);
@@ -126,7 +126,7 @@ void print_opt(WINDOW* sub, Option* opt, int i)
     }
 }
 
-int select_option_items(WINDOW* sub, const char* options[])
+int select_option_items(WINDOW* sub)
 {
     int options_cnt = 2;
     int ch;
@@ -177,7 +177,7 @@ void select_option(
         mvwprintw(sub, i + 3, 2, "%s", options[i]);
     }
 
-    while ((i = select_option_items(sub, options)) != BACK && i != KEY_F(10)) {
+    while ((i = select_option_items(sub)) != BACK && i != KEY_F(10)) {
         if (i == REGISTER) {
             opt->name_register++;
             opt->name_register %= 3;

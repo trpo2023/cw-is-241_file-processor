@@ -334,11 +334,6 @@ char* get_dir(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
     return (char*)dir_list->data;
 }
 
-void free_input_string(void* str)
-{
-    free(str);
-}
-
 char* select_dir(WINDOW* menu, char* current_dir)
 {
     int y, x;
@@ -361,7 +356,7 @@ char* select_dir(WINDOW* menu, char* current_dir)
     wclear(sub);
     wrefresh(sub);
     delwin(sub);
-    g_list_free_full(dir_list, free_input_string);
+    g_list_free_full(dir_list, free);
 
     return current_dir;
 }
@@ -458,7 +453,7 @@ void clean_data(Option* opt, GList** input_strings, GList** samples)
 {
     opt->name_register = R_DEFAULT;
     if (*input_strings != NULL) {
-        g_list_free_full(*input_strings, free_input_string);
+        g_list_free_full(*input_strings, free);
         *input_strings = NULL;
     }
     if (*samples != NULL) {

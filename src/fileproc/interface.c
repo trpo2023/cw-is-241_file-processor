@@ -108,16 +108,16 @@ WINDOW* init_sub_window(WINDOW* menu, int max_y, int max_x)
 void print_opt(WINDOW* sub, Option* opt, int i)
 {
     switch (i) {
-    case 0:
+    case 0: // REGISTER
         switch (opt->name_register) {
         case R_DEFAULT:
-            mvwprintw(sub, i + 3, 15, "%-20s", "Default");
+            mvwprintw(sub, i + 3, 15, "%-20s", "Стандартный");
             break;
         case R_LOW:
-            mvwprintw(sub, i + 3, 15, "%-20s", "Low");
+            mvwprintw(sub, i + 3, 15, "%-20s", "Нижний");
             break;
         case R_HIGH:
-            mvwprintw(sub, i + 3, 15, "%-20s", "High");
+            mvwprintw(sub, i + 3, 15, "%-20s", "Верхний");
             break;
         }
     }
@@ -132,7 +132,9 @@ void select_option(
 {
     char* default_dir = ".";
     const char* options[]
-            = {"Регистр", "Restore defaults", "<- вернуться обратно в меню"};
+            = {"Регистр",
+               "Восстановить значения по умолчанию",
+               "<-Вернуться в меню"};
     int y, x;
     getmaxyx(menu, y, x);
     WINDOW* sub = init_sub_window(menu, y, x);

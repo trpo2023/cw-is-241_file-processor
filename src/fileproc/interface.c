@@ -200,8 +200,11 @@ void free_renamed_files(void* data)
     free(data);
 }
 
-void process(WINDOW* sub, GList* sample, char* dir_path, Option* opt)
+void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
 {
+    int y, x;
+    getmaxyx(menu, y, x);
+    WINDOW* sub = init_sub_window(menu, y, x);
     GList* renamed_file_list = NULL;
     if (g_list_length(sample) == 0) {
         mvwprintw(
@@ -210,6 +213,7 @@ void process(WINDOW* sub, GList* sample, char* dir_path, Option* opt)
                 1,
                 "Сперва введите шаблоны, а потом запускайте "
                 "переименование");
+        wrefresh(sub);
         return;
     }
     mvwprintw(sub, 1, 15, "Идет процесс переименования...");
@@ -220,49 +224,41 @@ void process(WINDOW* sub, GList* sample, char* dir_path, Option* opt)
             g_list_length(renamed_file_list));
     g_list_free_full(renamed_file_list, free_renamed_files);
     mvwprintw(sub, 3, 13, "%s", str);
+    wrefresh(sub);
+    delwin(sub);
 }
 
 void start(WINDOW* menu)
 {
-    WINDOW* sub;
-    int row, col;
-    getmaxyx(menu, row, col);
-    int result = 0;
-    char current_dir[MAX_LEN] = ".";
-    Option option = {0};
     GList* input_strings = NULL;
     GList* samples = NULL;
-    while ((result = select_menu_items(menu, result)) != 4
-           && result != KEY_F(10)) {
+    Option option = {0};
+    char current_dir[MAX_LEN] = ".";
+    int y = getmaxy(menu);
+    int i = INPUT_PATTERN;
+
+    while ((i = select_menu_items(menu, i)) != EXIT && i != KEY_F(10)) {
         wrefresh(menu);
-        switch (result) {
-        case 0:
+        switch (i) {
+        case INPUT_PATTERN:
             samples = pattern_input(menu, &input_strings, samples);
-            mvwprintw_highlite(menu, result + 1, 2, menu_items[result]);
             break;
-        case 1:
+        case SELECT_DIR:
             select_dir(menu, current_dir);
-            mvwprintw(
-                    menu, row - 2, 2, "Выбранный каталог: %-30s", current_dir);
-            mvwprintw_highlite(menu, result + 1, 2, menu_items[result]);
+            mvwprintw(menu, y - 2, 2, "Выбранный каталог: %-30s", current_dir);
             break;
-        case 2:
-            sub = init_sub_window(menu, row, col);
-            process(sub, samples, current_dir, &option);
-            wrefresh(sub);
-            delwin(sub);
-            mvwprintw_highlite(menu, result + 1, 2, menu_items[result]);
+        case PROCESS:
+            process(menu, samples, current_dir, &option);
             clean_data(&option, &input_strings, &samples);
             break;
-        case 3:
+        case SELECT_OPT:
             select_option(menu, &option, &input_strings, &samples, current_dir);
-            mvwprintw_highlite(menu, result + 1, 2, menu_items[result]);
             break;
         }
+        mvwprintw_highlite(menu, i + 1, 2, menu_items[i]);
     }
 
     clean_data(&option, &input_strings, &samples);
-    return;
 }
 
 void print_dir(WINDOW* sub, GList* dir_list, int* dir_cnt)

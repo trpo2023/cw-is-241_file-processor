@@ -72,6 +72,27 @@ char* get_name(char* file_path)
     return name;
 }
 
+void write_correct_index(char* new_name, char* dest, char* suffix, Option* opt)
+{
+    size_t suf_len = strlen(suffix);
+    int counter = 1;
+    char* name = get_name(new_name);
+    change_register(name, opt->name_register);
+
+    if (suf_len == 0)
+        sprintf(dest, "%s", new_name);
+    else
+        sprintf(dest, "%s%s", new_name, suffix);
+
+    while (file_exist(dest) == 1) {
+        change_register(name, opt->name_register);
+        if (suf_len == 0)
+            sprintf(dest, "%s (%d)", new_name, counter++);
+        else
+            sprintf(dest, "%s (%d)%s", new_name, counter++, suffix);
+    }
+}
+
 int get_correct_name(char* old_path, char* new_name, char* dest, Option* opt)
 {
     if (file_exist(old_path) == 0)
@@ -82,7 +103,6 @@ int get_correct_name(char* old_path, char* new_name, char* dest, Option* opt)
         return -1;
     }
 
-    int counter = 1;
     size_t dest_len = strlen(new_name);
     size_t name_len = dest_len;
     size_t suffix_len = 0;
@@ -97,21 +117,7 @@ int get_correct_name(char* old_path, char* new_name, char* dest, Option* opt)
     strncpy(newest_name, new_name, name_len);
     newest_name[name_len] = '\0';
 
-    char* name = get_name(newest_name);
-
-    change_register(name, opt->name_register);
-    if (suffix_len == 0)
-        sprintf(dest, "%s", newest_name);
-    else
-        sprintf(dest, "%s%s", newest_name, suffix);
-
-    while (file_exist(dest) == 1) {
-        change_register(name, opt->name_register);
-        if (suffix_len == 0)
-            sprintf(dest, "%s (%d)", newest_name, counter++);
-        else
-            sprintf(dest, "%s (%d)%s", newest_name, counter++, suffix);
-    }
+    write_correct_index(newest_name, dest, suffix, opt);
 
     return 0;
 }
@@ -127,8 +133,8 @@ char* rename_file(char* old_path, char* new_name, char* renamed, Option* opt)
         strcat(new_path, new_name);
         new_name = new_path;
     }
-    int result = get_correct_name(old_path, new_name, renamed, opt);
-    if (result == -1)
+
+    if (get_correct_name(old_path, new_name, renamed, opt) == -1)
         return NULL;
 
     rename(old_path, renamed);

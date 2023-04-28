@@ -85,10 +85,8 @@ int item_select(WINDOW* menu, int i)
         case 10: // KEY_ENTER
             return i;
         }
-        wattron(menu, A_STANDOUT);
-        mvwprintw(menu, i + 1, 2, "%s", menu_items[i]);
-        wattroff(menu, A_STANDOUT);
 
+        mvwprintw_highlite(menu, i + 1, 2, menu_items[i]);
         mvwprintw(menu, y - 3, 2, "%s", menu_items[i]);
     }
 
@@ -140,9 +138,7 @@ void select_option(
     mvwprintw(sub, 1, 1, "Выберите опции:");
     int options_cnt = 2; // 0 = 1 :)
 
-    wattron(sub, A_STANDOUT);
-    mvwprintw(sub, 3, 2, "%s", options[0]);
-    wattroff(sub, A_STANDOUT);
+    mvwprintw_highlite(sub, 3, 2, options[0]);
     print_opt(sub, opt, 0);
 
     for (int i = 1; i <= options_cnt; i++) {
@@ -193,9 +189,7 @@ void select_option(
                 return;
             }
         }
-        wattron(sub, A_STANDOUT);
-        mvwprintw(sub, i + 3, 2, "%s", options[i]);
-        wattroff(sub, A_STANDOUT);
+        mvwprintw_highlite(sub, i + 3, 2, options[i]);
     }
 }
 
@@ -242,33 +236,25 @@ void start(WINDOW* menu)
         switch (result) {
         case 0:
             samples = pattern_input(menu, &input_strings, samples);
-            wattron(menu, A_STANDOUT);
-            mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
-            wattroff(menu, A_STANDOUT);
+            mvwprintw_highlite(menu, result + 1, 2, menu_items[result]);
             break;
         case 1:
             select_dir(menu, current_dir);
             mvwprintw(
                     menu, row - 2, 2, "Выбранный каталог: %-30s", current_dir);
-            wattron(menu, A_STANDOUT);
-            mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
-            wattroff(menu, A_STANDOUT);
+            mvwprintw_highlite(menu, result + 1, 2, menu_items[result]);
             break;
         case 2:
             sub = init_sub_window(menu, row, col);
             process(sub, samples, current_dir, &option);
             wrefresh(sub);
             delwin(sub);
-            wattron(menu, A_STANDOUT);
-            mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
-            wattroff(menu, A_STANDOUT);
+            mvwprintw_highlite(menu, result + 1, 2, menu_items[result]);
             clean_data(&option, &input_strings, &samples);
             break;
         case 3:
             select_option(menu, &option, &input_strings, &samples, current_dir);
-            wattron(menu, A_STANDOUT);
-            mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
-            wattroff(menu, A_STANDOUT);
+            mvwprintw_highlite(menu, result + 1, 2, menu_items[result]);
             break;
         }
     }
@@ -352,9 +338,7 @@ char* get_item(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
             break;
         }
 
-        wattron(sub, A_STANDOUT);
-        mvwprintw(sub, i + 2, 2, "%s", (char*)dir_list->data);
-        wattroff(sub, A_STANDOUT);
+        mvwprintw_highlite(sub, i + 2, 2, (char*)dir_list->data);
         wrefresh(sub);
     }
 
@@ -383,9 +367,7 @@ char* select_dir(WINDOW* menu, char* current_string)
     print_dir(sub, dir_list, &dir_cnt);
 
     // highliht first dir
-    wattron(sub, A_STANDOUT);
-    mvwprintw(sub, 2, 2, "%s", (char*)dir_list->data);
-    wattroff(sub, A_STANDOUT);
+    mvwprintw_highlite(sub, 2, 2, (char*)dir_list->data);
 
     dir = get_item(sub, dir_list, y - 5, dir_len, dir_cnt);
 

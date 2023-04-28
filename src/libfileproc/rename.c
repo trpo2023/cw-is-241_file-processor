@@ -95,13 +95,8 @@ void write_correct_index(char* new_name, char* dest, char* suffix, Option* opt)
 
 int get_correct_name(char* old_path, char* new_name, char* dest, Option* opt)
 {
-    if (file_exist(old_path) == 0)
+    if (file_exist(old_path) == 0 || strcmp(old_path, new_name) == 0)
         return -1;
-
-    if (strcmp(old_path, new_name) == 0) {
-        strcpy(dest, old_path);
-        return -1;
-    }
 
     size_t dest_len = strlen(new_name);
     size_t name_len = dest_len;
@@ -184,8 +179,8 @@ void get_new_name(char* name, char* pattern, char* dest)
 GList* rename_pair(GList* pair, GList* renamed_files, Option* opt)
 {
     char new_name[MAX_LEN] = {0};
-    char* old_name = (char*)((File_to_rename*)pair->data)->filename;
-    char* pattern = (char*)((File_to_rename*)pair->data)->pattern;
+    char* old_name = ((File_to_rename*)pair->data)->filename;
+    char* pattern = ((File_to_rename*)pair->data)->pattern;
     get_new_name(old_name, pattern, new_name);
 
     char* newest_name = malloc(sizeof(char) * MAX_LEN);
@@ -193,7 +188,6 @@ GList* rename_pair(GList* pair, GList* renamed_files, Option* opt)
         return renamed_files;
     }
 
-    // will be free, don't worry
     Renamed_file* renamed = malloc(sizeof(Renamed_file));
     renamed->old_path = old_name;
     renamed->new_path = newest_name;
@@ -208,5 +202,6 @@ GList* rename_files(GList* to_rename_list, Option* opt)
     for (GList* i = to_rename_list; i != NULL; i = i->next) {
         renamed_files = rename_pair(i, renamed_files, opt);
     }
+
     return renamed_files;
 }

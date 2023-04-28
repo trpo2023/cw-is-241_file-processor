@@ -3,8 +3,8 @@
 #define MAX_LEN 256 // Максимальная длина пути или имени
 
 typedef struct {
-    char* old_path; // Путь к файлу до переименования
-    char* new_path; // Путь к файлу после переименония
+    char* old_path; // Относительный путь к файлу до переименования
+    char* new_path; // Относительный путь к файлу после переименония
 } Renamed_file;
 
 enum Register { R_DEFAULT, R_LOW, R_HIGH };

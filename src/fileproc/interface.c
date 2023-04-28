@@ -16,6 +16,9 @@ const char menu_items[5][71] = {
         "5) Выход из приложения (F10)           ",
 };
 
+const char* options[] = {
+        "Регистр", "Восстановить значения по умолчанию", "<-Вернуться в меню"};
+
 void clean_data(Option* opt, GList** input_strings, GList** samples);
 
 void check_term_size(int x, int y)
@@ -123,32 +126,9 @@ void print_opt(WINDOW* sub, Option* opt, int i)
     }
 }
 
-void select_option(
-        WINDOW* menu,
-        Option* opt,
-        GList** input_strings,
-        GList** samples,
-        char* current_dir)
+int select_option_items(WINDOW* sub, const char* options[])
 {
-    char* default_dir = ".";
-    const char* options[]
-            = {"Регистр",
-               "Восстановить значения по умолчанию",
-               "<-Вернуться в меню"};
-    int y, x;
-    getmaxyx(menu, y, x);
-    WINDOW* sub = init_sub_window(menu, y, x);
-    mvwprintw(sub, 1, 1, "Выберите опции:");
-    int options_cnt = 2; // 0 = 1 :)
-
-    mvwprintw_highlite(sub, 3, 2, options[0]);
-    print_opt(sub, opt, 0);
-
-    for (int i = 1; i <= options_cnt; i++) {
-        mvwprintw(sub, i + 3, 2, "%s", options[i]);
-    }
-
-    wrefresh(sub);
+    int options_cnt = 2;
     int ch;
     int i = 0;
 
@@ -164,36 +144,55 @@ void select_option(
             i = (i > options_cnt) ? 0 : i;
             break;
         case 10: // KEY_ENTER
-            switch (i) {
-            case 0:
-                opt->name_register++;
-                if (opt->name_register == 3)
-                    opt->name_register = R_DEFAULT;
-                print_opt(sub, opt, i);
-                wrefresh(sub);
-                break;
-            case 1:
-                strcpy(current_dir, default_dir);
-                mvwprintw(
-                        menu,
-                        y - 2,
-                        2,
-                        "Выбранный каталог: %-30s",
-                        current_dir);
-                clean_data(opt, input_strings, samples);
-                wclear(sub);
-                wrefresh(sub);
-                delwin(sub);
-                return;
-            case 2:
-                wclear(sub);
-                wrefresh(sub);
-                delwin(sub);
-                return;
-            }
+            return i;
         }
         mvwprintw_highlite(sub, i + 3, 2, options[i]);
     }
+
+    return KEY_F(10);
+}
+
+void set_default_settings(
+        WINDOW* menu, Option* opt, GList** inp_s, GList** samp, char* curr_dir)
+{
+    int y = getmaxy(menu);
+    strcpy(curr_dir, ".");
+    mvwprintw(menu, y - 2, 2, "Выбранный каталог: %-30s", curr_dir);
+    clean_data(opt, inp_s, samp);
+}
+
+void select_option(
+        WINDOW* menu, Option* opt, GList** inp_s, GList** samp, char* curr_dir)
+{
+    int options_cnt = 2;
+    int y, x, i;
+    getmaxyx(menu, y, x);
+    WINDOW* sub = init_sub_window(menu, y, x);
+    mvwprintw(sub, 1, 1, "Выберите опцию:");
+
+    mvwprintw_highlite(sub, 3, 2, options[0]);
+    print_opt(sub, opt, 0);
+
+    for (i = 1; i <= options_cnt; i++) {
+        mvwprintw(sub, i + 3, 2, "%s", options[i]);
+    }
+
+    while ((i = select_option_items(sub, options)) != BACK && i != KEY_F(10)) {
+        if (i == REGISTER) {
+            opt->name_register++;
+            opt->name_register %= 3;
+            print_opt(sub, opt, i);
+            wrefresh(sub);
+        } else {
+            set_default_settings(menu, opt, inp_s, samp, curr_dir);
+            break;
+        }
+        mvwprintw_highlite(sub, 3, 2, options[i]);
+    }
+
+    wclear(sub);
+    wrefresh(sub);
+    delwin(sub);
 }
 
 void free_renamed_files(void* data)

@@ -18,29 +18,40 @@ const char menu_items[5][71] = {
 
 void clean_data(Option* opt, GList** input_strings, GList** samples);
 
+void check_term_size(int x, int y)
+{
+    if (x < 120 || y < 30) {
+        delwin(stdscr);
+        endwin();
+        printf("\e[1;31mОшибка\e[0m: текущий размер терминала %dx%d\n", x, y);
+        printf("Минимальный размер: 120x30 (x, y)\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void mvwprintw_highlite(WINDOW* win, int y, int x, const char* str)
+{
+    wattron(win, A_STANDOUT);
+    mvwprintw(win, y, x, "%s", str);
+    wattroff(win, A_STANDOUT);
+}
+
 WINDOW* init_menu()
 {
     initscr();
     int y, x;
     getmaxyx(stdscr, y, x);
-    if (x < 120 || y < 30) {
-        endwin();
-        printf("\e[1;31mОшибка\e[0m: размер терминала меньше 120x30\n");
-        printf("Текущий размер терминала: %dx%d (x, y)\n", x, y);
-        exit(EXIT_FAILURE);
-    }
+    check_term_size(x, y);
 
-    char* top = "File processor";
-    mvwprintw(stdscr, 0, (x - strlen(top)) / 2, "%s", top);
+    char* top_str = "File processor";
+    mvprintw(0, (x - strlen(top_str)) / 2, "%s", top_str);
     refresh();
 
     WINDOW* win = newwin(y - 1, x, 1, 0);
     box(win, 0, 0);
     getmaxyx(win, y, x);
 
-    wattron(win, A_STANDOUT);
-    mvwprintw(win, 1, 2, "%s", menu_items[0]);
-    wattroff(win, A_STANDOUT);
+    mvwprintw_highlite(win, 1, 2, menu_items[0]);
 
     for (int i = 1; i < 5; i++) {
         mvwprintw(win, i + 1, 2, "%s", menu_items[i]);
@@ -202,7 +213,8 @@ void process(WINDOW* sub, GList* sample, char* dir_path, Option* opt)
                 sub,
                 1,
                 1,
-                "Сперва введите шаблоны, а потом запускайте переименование");
+                "Сперва введите шаблоны, а потом запускайте "
+                "переименование");
         return;
     }
     mvwprintw(sub, 1, 15, "Идет процесс переименования...");

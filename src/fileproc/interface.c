@@ -264,24 +264,24 @@ void start(WINDOW* menu)
 
 void print_dir(WINDOW* sub, GList* dir_list, int* dir_cnt)
 {
-    int y = getmaxy(sub);
+    int y = getmaxy(sub) - 3;
+    int x = getmaxx(sub) - 3;
     int cnt = 0;
-    for (GList* i = dir_list; i != NULL && cnt < y - 3; i = i->next) {
-        mvwprintw(sub, cnt + 2, 2, "%-55s", (char*)i->data);
+    for (GList* i = dir_list; i != NULL && cnt < y; i = i->next) {
+        mvwprintw(sub, cnt + 2, 2, "%-*s", x, (char*)i->data);
         cnt++;
     }
-
     *dir_cnt = cnt;
 
-    while (cnt < y - 3) {
-        mvwprintw(sub, cnt + 2, 2, "%-55s", " ");
+    while (cnt < y) {
+        mvwprintw(sub, cnt + 2, 2, "%-*s", x, " ");
         cnt++;
     }
 
     wrefresh(sub);
 }
 
-// p - pages
+// p - current page
 // max_p - max_page
 // dir - list of directories
 void print_new_page(WINDOW* sub, GList* dir, int* dir_cnt, int p, int max_p)
@@ -291,7 +291,7 @@ void print_new_page(WINDOW* sub, GList* dir, int* dir_cnt, int p, int max_p)
     mvwprintw(sub, 1, x - 5, "%d/%d", p + 1, max_p + 1);
 }
 
-char* get_item(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
+char* get_dir(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
 {
     int ch, i = 0, page = 0, x = getmaxx(sub);
     size_t max_pages = len / y;
@@ -302,18 +302,13 @@ char* get_item(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
 
     while ((ch = wgetch(sub)) != 10) { // 10 - KEY_ENTER
         mvwprintw(sub, i + 2, 2, "%s", (char*)dir_list->data);
-
         if (i == 0)
             pages[page] = dir_list;
 
         switch (ch) {
         case KEY_UP:
             i--;
-            if (i < 0 && page == 1) {
-                page--;
-                print_new_page(sub, pages[page], &dir_cnt, page, max_pages);
-                i = y - 1;
-            } else if (i < 0 && page > 1) {
+            if (i < 0 && page >= 1) {
                 page--;
                 print_new_page(sub, pages[page], &dir_cnt, page, max_pages);
                 i = y - 1;
@@ -322,7 +317,6 @@ char* get_item(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
             else
                 dir_list = dir_list->prev;
             break;
-
         case KEY_DOWN:
             i++;
             if (i >= dir_cnt && page == max_pages)
@@ -333,14 +327,10 @@ char* get_item(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
                 i = 0;
             } else
                 dir_list = dir_list->next;
-
-            break;
         }
-
         mvwprintw_highlite(sub, i + 2, 2, (char*)dir_list->data);
         wrefresh(sub);
     }
-
     return (char*)dir_list->data;
 }
 
@@ -349,35 +339,31 @@ void free_input_string(void* str)
     free(str);
 }
 
-char* select_dir(WINDOW* menu, char* current_string)
+char* select_dir(WINDOW* menu, char* current_dir)
 {
     int y, x;
     getmaxyx(menu, y, x);
     WINDOW* sub = init_sub_window(menu, y, x);
     mvwprintw(sub, 1, 1, "Выберите каталог:");
-    char* dir = ".";
+    char* dir = NULL;
 
-    GList* dir_list = get_files_or_dirs_list(".", dirs);
+    GList* dir_list = get_files_or_dirs_list(".", DIRS);
     dir_list = g_list_sort(dir_list, my_comparator);
     size_t dir_len = g_list_length(dir_list);
 
     int dir_cnt = 0; // count of directories on one page
-
     print_dir(sub, dir_list, &dir_cnt);
-
-    // highliht first dir
     mvwprintw_highlite(sub, 2, 2, (char*)dir_list->data);
 
-    dir = get_item(sub, dir_list, y - 5, dir_len, dir_cnt);
-
-    strcpy(current_string, dir);
+    dir = get_dir(sub, dir_list, y - 5, dir_len, dir_cnt);
+    strcpy(current_dir, dir);
 
     wclear(sub);
     wrefresh(sub);
     delwin(sub);
     g_list_free_full(dir_list, free_input_string);
 
-    return current_string;
+    return current_dir;
 }
 
 int print_input_strings(WINDOW* sub, GList* input_strings)

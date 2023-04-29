@@ -70,28 +70,29 @@ WINDOW* init_menu()
     return win;
 }
 
-int select_menu_items(WINDOW* menu, int i)
+int select_items(WINDOW* win, const char* items[], int i, int offset, int max)
 {
-    int y = getmaxy(menu);
+    int y = getmaxy(win);
     int ch;
-    int max_items = 4;
-    while ((ch = wgetch(menu)) != KEY_F(10)) {
-        mvwprintw(menu, i + 1, 2, "%s", menu_items[i]);
+    while ((ch = wgetch(win)) != KEY_F(10)) {
+        mvwprintw(win, i + offset, 2, "%s", items[i]);
         switch (ch) {
         case KEY_UP:
             i--;
-            i = (i < 0) ? max_items : i;
+            i = (i < 0) ? max : i;
             break;
         case KEY_DOWN:
             i++;
-            i = (i > max_items) ? 0 : i;
+            i = (i > max) ? 0 : i;
             break;
         case 10: // KEY_ENTER
             return i;
         }
-
-        mvwprintw_highlite(menu, i + 1, 2, menu_items[i]);
-        mvwprintw(menu, y - 3, 2, "%-100s", menu_items[i]);
+        mvwprintw_highlite(win, i + offset, 2, items[i]);
+        if (max == 4) // menu options
+        {
+            mvwprintw(win, y - 3, 2, "%-100s", items[i]);
+        }
     }
 
     return KEY_F(10);
@@ -126,32 +127,6 @@ void print_opt(WINDOW* sub, Option* opt, int i)
     }
 }
 
-int select_option_items(WINDOW* sub)
-{
-    int options_cnt = 2;
-    int ch;
-    int i = 0;
-
-    while ((ch = wgetch(sub)) != KEY_F(10)) {
-        mvwprintw(sub, i + 3, 2, "%s", options[i]);
-        switch (ch) {
-        case KEY_UP:
-            i--;
-            i = (i < 0) ? options_cnt : i;
-            break;
-        case KEY_DOWN:
-            i++;
-            i = (i > options_cnt) ? 0 : i;
-            break;
-        case 10: // KEY_ENTER
-            return i;
-        }
-        mvwprintw_highlite(sub, i + 3, 2, options[i]);
-    }
-
-    return KEY_F(10);
-}
-
 void set_default_settings(
         WINDOW* menu, Option* opt, GList** inp_s, GList** samp, char* curr_dir)
 {
@@ -176,8 +151,9 @@ void select_option(
     for (i = 1; i <= options_cnt; i++) {
         mvwprintw(sub, i + 3, 2, "%s", options[i]);
     }
-
-    while ((i = select_option_items(sub)) != BACK && i != KEY_F(10)) {
+    i = 0;
+    while ((i = select_items(sub, options, i, 3, 2)) != BACK
+           && i != KEY_F(10)) {
         if (i == REGISTER) {
             opt->name_register++;
             opt->name_register %= 3;
@@ -238,7 +214,8 @@ void start(WINDOW* menu)
     int y = getmaxy(menu);
     int i = INPUT_PATTERN;
 
-    while ((i = select_menu_items(menu, i)) != EXIT && i != KEY_F(10)) {
+    while ((i = select_items(menu, menu_items, i, 1, 4)) != EXIT
+           && i != KEY_F(10)) {
         wrefresh(menu);
         switch (i) {
         case INPUT_PATTERN:

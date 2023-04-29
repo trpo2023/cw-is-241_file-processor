@@ -8,39 +8,53 @@
 #include <libfileproc/rename.h>
 #include <libfileproc/running.h>
 
-const char menu_items[5][71] = {
-        "1) Ввести шаблоны                      ",
-        "2) Выбрать каталог                     ",
-        "3) Запустить массовое переименование   ",
-        "4) Опции                               ",
-        "5) Выход из приложения (F10)           ",
+const char* menu_items[] = {
+        "1) Ввести шаблоны",
+        "2) Выбрать каталог",
+        "3) Запустить массовое переименование",
+        "4) Опции",
+        "5) Выход из приложения (F10)",
 };
 
+const char* options[] = {
+        "Регистр", "Восстановить значения по умолчанию", "<-Вернуться в меню"};
+
 void clean_data(Option* opt, GList** input_strings, GList** samples);
+
+void check_term_size(int x, int y)
+{
+    if (x < 120 || y < 30) {
+        delwin(stdscr);
+        endwin();
+        printf("\e[1;31mОшибка\e[0m: текущий размер терминала %dx%d\n", x, y);
+        printf("Минимальный размер: 120x30 (x, y)\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void mvwprintw_highlite(WINDOW* win, int y, int x, const char* str)
+{
+    wattron(win, A_STANDOUT);
+    mvwprintw(win, y, x, "%s", str);
+    wattroff(win, A_STANDOUT);
+}
 
 WINDOW* init_menu()
 {
     initscr();
     int y, x;
     getmaxyx(stdscr, y, x);
-    if (x < 120 || y < 30) {
-        endwin();
-        printf("\e[1;31mОшибка\e[0m: размер терминала меньше 120x30\n");
-        printf("Текущий размер терминала: %dx%d (x, y)\n", x, y);
-        exit(EXIT_FAILURE);
-    }
+    check_term_size(x, y);
 
-    char* top = "File processor";
-    mvwprintw(stdscr, 0, (x - strlen(top)) / 2, "%s", top);
+    char* top_str = "File processor";
+    mvprintw(0, (x - strlen(top_str)) / 2, "%s", top_str);
     refresh();
 
     WINDOW* win = newwin(y - 1, x, 1, 0);
     box(win, 0, 0);
     getmaxyx(win, y, x);
 
-    wattron(win, A_STANDOUT);
-    mvwprintw(win, 1, 2, "%s", menu_items[0]);
-    wattroff(win, A_STANDOUT);
+    mvwprintw_highlite(win, 1, 2, menu_items[0]);
 
     for (int i = 1; i < 5; i++) {
         mvwprintw(win, i + 1, 2, "%s", menu_items[i]);
@@ -56,29 +70,29 @@ WINDOW* init_menu()
     return win;
 }
 
-int item_select(WINDOW* menu, int i)
+int select_items(WINDOW* win, const char* items[], int i, int offset, int max)
 {
-    int y = getmaxy(menu);
+    int y = getmaxy(win);
     int ch;
-    while ((ch = wgetch(menu)) != KEY_F(10)) {
-        mvwprintw(menu, i + 1, 2, "%s", menu_items[i]);
+    while ((ch = wgetch(win)) != KEY_F(10)) {
+        mvwprintw(win, i + offset, 2, "%s", items[i]);
         switch (ch) {
         case KEY_UP:
             i--;
-            i = (i < 0) ? 4 : i;
+            i = (i < 0) ? max : i;
             break;
         case KEY_DOWN:
             i++;
-            i = (i > 4) ? 0 : i;
+            i = (i > max) ? 0 : i;
             break;
         case 10: // KEY_ENTER
             return i;
         }
-        wattron(menu, A_STANDOUT);
-        mvwprintw(menu, i + 1, 2, "%s", menu_items[i]);
-        wattroff(menu, A_STANDOUT);
-
-        mvwprintw(menu, y - 3, 2, "%s", menu_items[i]);
+        mvwprintw_highlite(win, i + offset, 2, items[i]);
+        if (max == 4) // menu options
+        {
+            mvwprintw(win, y - 3, 2, "%-100s", items[i]);
+        }
     }
 
     return KEY_F(10);
@@ -98,111 +112,85 @@ WINDOW* init_sub_window(WINDOW* menu, int max_y, int max_x)
 void print_opt(WINDOW* sub, Option* opt, int i)
 {
     switch (i) {
-    case 0:
+    case 0: // REGISTER
         switch (opt->name_register) {
         case R_DEFAULT:
-            mvwprintw(sub, i + 3, 15, "%-20s", "Default");
+            mvwprintw(sub, i + 3, 15, "%-20s", "Стандартный");
             break;
         case R_LOW:
-            mvwprintw(sub, i + 3, 15, "%-20s", "Low");
+            mvwprintw(sub, i + 3, 15, "%-20s", "Нижний");
             break;
         case R_HIGH:
-            mvwprintw(sub, i + 3, 15, "%-20s", "High");
+            mvwprintw(sub, i + 3, 15, "%-20s", "Верхний");
             break;
         }
     }
 }
 
-void select_option(
-        WINDOW* menu,
-        Option* opt,
-        GList** input_strings,
-        GList** samples,
-        char* current_dir)
+void set_default_settings(
+        WINDOW* menu, Option* opt, GList** inp_s, GList** samp, char* curr_dir)
 {
-    char* default_dir = ".";
-    const char* options[]
-            = {"Регистр", "Restore defaults", "<- вернуться обратно в меню"};
-    int y, x;
+    int y = getmaxy(menu);
+    strcpy(curr_dir, ".");
+    mvwprintw(menu, y - 2, 2, "Выбранный каталог: %-30s", curr_dir);
+    clean_data(opt, inp_s, samp);
+}
+
+void select_option(
+        WINDOW* menu, Option* opt, GList** inp_s, GList** samp, char* curr_dir)
+{
+    int options_cnt = 2;
+    int y, x, i;
     getmaxyx(menu, y, x);
     WINDOW* sub = init_sub_window(menu, y, x);
-    mvwprintw(sub, 1, 1, "Выберите опции:");
-    int options_cnt = 2; // 0 = 1 :)
+    mvwprintw(sub, 1, 1, "Выберите опцию:");
 
-    wattron(sub, A_STANDOUT);
-    mvwprintw(sub, 3, 2, "%s", options[0]);
-    wattroff(sub, A_STANDOUT);
+    mvwprintw_highlite(sub, 3, 2, options[0]);
     print_opt(sub, opt, 0);
 
-    for (int i = 1; i <= options_cnt; i++) {
+    for (i = 1; i <= options_cnt; i++) {
         mvwprintw(sub, i + 3, 2, "%s", options[i]);
     }
-
-    wrefresh(sub);
-    int ch;
-    int i = 0;
-
-    while ((ch = wgetch(sub)) != KEY_F(10)) {
-        mvwprintw(sub, i + 3, 2, "%s", options[i]);
-        switch (ch) {
-        case KEY_UP:
-            i--;
-            i = (i < 0) ? options_cnt : i;
+    i = 0;
+    while ((i = select_items(sub, options, i, 3, 2)) != BACK
+           && i != KEY_F(10)) {
+        if (i == REGISTER) {
+            opt->name_register++;
+            opt->name_register %= 3;
+            print_opt(sub, opt, i);
+            wrefresh(sub);
+        } else {
+            set_default_settings(menu, opt, inp_s, samp, curr_dir);
             break;
-        case KEY_DOWN:
-            i++;
-            i = (i > options_cnt) ? 0 : i;
-            break;
-        case 10: // KEY_ENTER
-            switch (i) {
-            case 0:
-                opt->name_register++;
-                if (opt->name_register == 3)
-                    opt->name_register = R_DEFAULT;
-                print_opt(sub, opt, i);
-                wrefresh(sub);
-                break;
-            case 1:
-                strcpy(current_dir, default_dir);
-                mvwprintw(
-                        menu,
-                        y - 2,
-                        2,
-                        "Выбранный каталог: %-30s",
-                        current_dir);
-                clean_data(opt, input_strings, samples);
-                wclear(sub);
-                wrefresh(sub);
-                delwin(sub);
-                return;
-            case 2:
-                wclear(sub);
-                wrefresh(sub);
-                delwin(sub);
-                return;
-            }
         }
-        wattron(sub, A_STANDOUT);
-        mvwprintw(sub, i + 3, 2, "%s", options[i]);
-        wattroff(sub, A_STANDOUT);
+        mvwprintw_highlite(sub, 3, 2, options[i]);
     }
+
+    wclear(sub);
+    wrefresh(sub);
+    delwin(sub);
 }
 
 void free_renamed_files(void* data)
 {
-    free(((Renamed_file*)data)->new_name);
+    free(((RenamedFile*)data)->new_path);
     free(data);
 }
 
-void process(WINDOW* sub, GList* sample, char* dir_path, Option* opt)
+void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
 {
+    int y, x;
+    getmaxyx(menu, y, x);
+    WINDOW* sub = init_sub_window(menu, y, x);
     GList* renamed_file_list = NULL;
     if (g_list_length(sample) == 0) {
         mvwprintw(
                 sub,
                 1,
                 1,
-                "Сперва введите шаблоны, а потом запускайте переименование");
+                "Сперва введите шаблоны, а потом запускайте "
+                "переименование");
+        wrefresh(sub);
         return;
     }
     mvwprintw(sub, 1, 15, "Идет процесс переименования...");
@@ -213,78 +201,30 @@ void process(WINDOW* sub, GList* sample, char* dir_path, Option* opt)
             g_list_length(renamed_file_list));
     g_list_free_full(renamed_file_list, free_renamed_files);
     mvwprintw(sub, 3, 13, "%s", str);
-}
-
-void start(WINDOW* menu)
-{
-    WINDOW* sub;
-    int row, col;
-    getmaxyx(menu, row, col);
-    int result = 0;
-    char current_dir[MAX_LEN] = ".";
-    Option option = {0};
-    GList* input_strings = NULL;
-    GList* samples = NULL;
-    while ((result = item_select(menu, result)) != 4 && result != KEY_F(10)) {
-        wrefresh(menu);
-        switch (result) {
-        case 0:
-            samples = pattern_input(menu, &input_strings, samples);
-            wattron(menu, A_STANDOUT);
-            mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
-            wattroff(menu, A_STANDOUT);
-            break;
-        case 1:
-            select_dir(menu, current_dir);
-            mvwprintw(
-                    menu, row - 2, 2, "Выбранный каталог: %-30s", current_dir);
-            wattron(menu, A_STANDOUT);
-            mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
-            wattroff(menu, A_STANDOUT);
-            break;
-        case 2:
-            sub = init_sub_window(menu, row, col);
-            process(sub, samples, current_dir, &option);
-            wrefresh(sub);
-            delwin(sub);
-            wattron(menu, A_STANDOUT);
-            mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
-            wattroff(menu, A_STANDOUT);
-            clean_data(&option, &input_strings, &samples);
-            break;
-        case 3:
-            select_option(menu, &option, &input_strings, &samples, current_dir);
-            wattron(menu, A_STANDOUT);
-            mvwprintw(menu, result + 1, 2, "%s", menu_items[result]);
-            wattroff(menu, A_STANDOUT);
-            break;
-        }
-    }
-
-    clean_data(&option, &input_strings, &samples);
-    return;
+    wrefresh(sub);
+    delwin(sub);
 }
 
 void print_dir(WINDOW* sub, GList* dir_list, int* dir_cnt)
 {
-    int y = getmaxy(sub);
+    int y = getmaxy(sub) - 3;
+    int x = getmaxx(sub) - 3;
     int cnt = 0;
-    for (GList* i = dir_list; i != NULL && cnt < y - 3; i = i->next) {
-        mvwprintw(sub, cnt + 2, 2, "%-55s", (char*)i->data);
+    for (GList* i = dir_list; i != NULL && cnt < y; i = i->next) {
+        mvwprintw(sub, cnt + 2, 2, "%-*s", x, (char*)i->data);
         cnt++;
     }
-
     *dir_cnt = cnt;
 
-    while (cnt < y - 3) {
-        mvwprintw(sub, cnt + 2, 2, "%-55s", " ");
+    while (cnt < y) {
+        mvwprintw(sub, cnt + 2, 2, "%-*s", x, " ");
         cnt++;
     }
 
     wrefresh(sub);
 }
 
-// p - pages
+// p - current page
 // max_p - max_page
 // dir - list of directories
 void print_new_page(WINDOW* sub, GList* dir, int* dir_cnt, int p, int max_p)
@@ -294,7 +234,7 @@ void print_new_page(WINDOW* sub, GList* dir, int* dir_cnt, int p, int max_p)
     mvwprintw(sub, 1, x - 5, "%d/%d", p + 1, max_p + 1);
 }
 
-char* get_item(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
+char* get_dir(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
 {
     int ch, i = 0, page = 0, x = getmaxx(sub);
     size_t max_pages = len / y;
@@ -305,18 +245,13 @@ char* get_item(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
 
     while ((ch = wgetch(sub)) != 10) { // 10 - KEY_ENTER
         mvwprintw(sub, i + 2, 2, "%s", (char*)dir_list->data);
-
         if (i == 0)
             pages[page] = dir_list;
 
         switch (ch) {
         case KEY_UP:
             i--;
-            if (i < 0 && page == 1) {
-                page--;
-                print_new_page(sub, pages[page], &dir_cnt, page, max_pages);
-                i = y - 1;
-            } else if (i < 0 && page > 1) {
+            if (i < 0 && page >= 1) {
                 page--;
                 print_new_page(sub, pages[page], &dir_cnt, page, max_pages);
                 i = y - 1;
@@ -325,7 +260,6 @@ char* get_item(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
             else
                 dir_list = dir_list->prev;
             break;
-
         case KEY_DOWN:
             i++;
             if (i >= dir_cnt && page == max_pages)
@@ -336,55 +270,38 @@ char* get_item(WINDOW* sub, GList* dir_list, int y, size_t len, int dir_cnt)
                 i = 0;
             } else
                 dir_list = dir_list->next;
-
-            break;
         }
-
-        wattron(sub, A_STANDOUT);
-        mvwprintw(sub, i + 2, 2, "%s", (char*)dir_list->data);
-        wattroff(sub, A_STANDOUT);
+        mvwprintw_highlite(sub, i + 2, 2, (char*)dir_list->data);
         wrefresh(sub);
     }
-
     return (char*)dir_list->data;
 }
 
-void free_input_string(void* str)
-{
-    free(str);
-}
-
-char* select_dir(WINDOW* menu, char* current_string)
+char* select_dir(WINDOW* menu, char* current_dir)
 {
     int y, x;
     getmaxyx(menu, y, x);
     WINDOW* sub = init_sub_window(menu, y, x);
     mvwprintw(sub, 1, 1, "Выберите каталог:");
-    char* dir = ".";
+    char* dir = NULL;
 
-    GList* dir_list = get_files_or_dirs_list(".", dirs);
+    GList* dir_list = get_files_or_dirs_list(".", DIRS);
     dir_list = g_list_sort(dir_list, my_comparator);
     size_t dir_len = g_list_length(dir_list);
 
     int dir_cnt = 0; // count of directories on one page
-
     print_dir(sub, dir_list, &dir_cnt);
+    mvwprintw_highlite(sub, 2, 2, (char*)dir_list->data);
 
-    // highliht first dir
-    wattron(sub, A_STANDOUT);
-    mvwprintw(sub, 2, 2, "%s", (char*)dir_list->data);
-    wattroff(sub, A_STANDOUT);
-
-    dir = get_item(sub, dir_list, y - 5, dir_len, dir_cnt);
-
-    strcpy(current_string, dir);
+    dir = get_dir(sub, dir_list, y - 5, dir_len, dir_cnt);
+    strcpy(current_dir, dir);
 
     wclear(sub);
     wrefresh(sub);
     delwin(sub);
-    g_list_free_full(dir_list, free_input_string);
+    g_list_free_full(dir_list, free);
 
-    return current_string;
+    return current_dir;
 }
 
 int print_input_strings(WINDOW* sub, GList* input_strings)
@@ -479,11 +396,45 @@ void clean_data(Option* opt, GList** input_strings, GList** samples)
 {
     opt->name_register = R_DEFAULT;
     if (*input_strings != NULL) {
-        g_list_free_full(*input_strings, free_input_string);
+        g_list_free_full(*input_strings, free);
         *input_strings = NULL;
     }
     if (*samples != NULL) {
         g_list_free_full(*samples, free_sample_parts);
         *samples = NULL;
     }
+}
+
+void start(WINDOW* menu)
+{
+    GList* input_strings = NULL;
+    GList* samples = NULL;
+    Option option = {0};
+    char current_dir[MAX_LEN] = ".";
+    int y = getmaxy(menu);
+    int i = INPUT_PATTERN;
+
+    while ((i = select_items(menu, menu_items, i, 1, 4)) != EXIT
+           && i != KEY_F(10)) {
+        wrefresh(menu);
+        switch (i) {
+        case INPUT_PATTERN:
+            samples = pattern_input(menu, &input_strings, samples);
+            break;
+        case SELECT_DIR:
+            select_dir(menu, current_dir);
+            mvwprintw(menu, y - 2, 2, "Выбранный каталог: %-30s", current_dir);
+            break;
+        case PROCESS:
+            process(menu, samples, current_dir, &option);
+            clean_data(&option, &input_strings, &samples);
+            break;
+        case SELECT_OPT:
+            select_option(menu, &option, &input_strings, &samples, current_dir);
+            break;
+        }
+        mvwprintw_highlite(menu, i + 1, 2, menu_items[i]);
+    }
+
+    clean_data(&option, &input_strings, &samples);
 }

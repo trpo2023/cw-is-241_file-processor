@@ -3,9 +3,9 @@
 #include <glib.h>
 #include <stdbool.h>
 
-enum attributes {
-    dirs = DT_DIR, // Директории
-    files = DT_REG // Файлы
+enum Attributes {
+    DIRS = DT_DIR, // Директории
+    FILES = DT_REG // Файлы
 };
 
 typedef struct {

@@ -1,10 +1,31 @@
 #pragma once
 #include <ncurses.h>
 
+enum MenuItems {
+    INPUT_PATTERN,
+    SELECT_DIR,
+    PROCESS,
+    SELECT_OPT,
+    EXIT,
+};
+
+enum OptionItems {
+    REGISTER,
+    CLEAR,
+    BACK,
+};
+
+// Возвращает:  Указатель на 'окно'.
+//
+// Функция создадает новое 'окно', если размер терминала не меньше 120x30.
+// Иначе выводится ошибка и программа завершает свою работу. Сверху выводится
+// надпись "File processor", отображаются все пункты меню. Устанавливаются
+// различные режимы терминала для комфортного пользовния приложением.
 WINDOW* init_menu();
-int item_select(WINDOW* menu, int item_number);
-WINDOW* init_sub_window(WINDOW* menu, int max_y, int max_x);
+
+// Принимает:  Указатель на 'окно' menu, созданное функцией init_menu.
+//
+// Внутри функции пользователь выбирает пункты меню и в соответствии с выбор
+// функция взаимодействует с модулями приложения. Функция прерывает своё
+// выполнение после ввода пользователем F10 или выбора 5 пункта меню.
 void start(WINDOW* menu);
-char* select_dir(WINDOW* menu, char* current_dir);
-GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples);
-void free_input_string(void* str);

@@ -1,23 +1,60 @@
 #pragma once
-#include <glib.h>
-#define MAX_LEN 256
+
+#define MAX_LEN 256 // Максимальная длина пути или имени
 
 typedef struct {
-    char* old_name;
-    char* new_name;
-} Renamed_file;
+    char* old_path; // Относительный путь к файлу до переименования
+    char* new_path; // Относительный путь к файлу после переименония
+} RenamedFile;
 
 enum Register { R_DEFAULT, R_LOW, R_HIGH };
 
 typedef struct {
-    unsigned int name_register;
+    unsigned int name_register; // Принимает одно из значение Register
 } Option;
 
-void get_new_name(char* name, char* pattern, char* dest);
-int file_exist(char* file_path);
-char* get_name(char* file_name);
+// Принимает:   file_name - строка с именем файла.
+//
+// Возвращает:  Указатель на последнее вхождение символа '.'.
+//              Если строка не содержит символ '.', возвращается NULL.
 char* get_suffix(char* file_name);
-int get_correct_name(char* old_name, char* new_name, char* dest, Option* opt);
-char* rename_file(char* old_name, char* new_name, char* renamed, Option* opt);
-GList* rename_pair(GList* pair, GList* renamed_files, Option* opt);
-GList* rename_files(GList* pair_list, Option* opt);
+
+// Принимает:   file_path - строка с путем к файлу.
+//
+// Возвращает:  Указатель на последнее вхождение символа '/'.
+//              Если строка не содержит символ '/', возвращается
+//              указатель на исходный путь.
+char* get_name(char* file_path);
+
+// Принимает:   file_path - строка с путем к файлу.
+//              pattern - строка с шаблоном.
+//              dest - строка для записи нового имени.
+//
+// Функция генерирует новое имя для файла в соответствии с шаблоном.
+void get_new_name(char* file_path, char* pattern, char* dest);
+
+// Принимает:   old_path - строка с путем к файлу.
+//              new_name - строка с новым именем для файла.
+//              dest - строка для записи корректного имени.
+//              opt - укзаатель на структуру Option.
+//
+// Функция пытается установить, существует ли файл new_name.
+// Если файл new_name уже сущетвует, то к имени файла добавляется индекс.
+// Например file_exist.txt уже существует, тогда функция проверит
+// file_exist (1).txt на существование и т.д.
+//
+// Возвращает:  0, если удалось получить корректное имя.
+//              -1, если файл old_path не существует или
+//              если new_name не отличается от old_path.
+int get_correct_name(char* old_path, char* new_name, char* dest, Option* opt);
+
+// Принимает:   to_rename_list - список структур File_to_rename.
+//              opt - укзаатель на структуру Option.
+//
+// Функция проходится по каждому узлу списка to_rename_list
+// и переименовывает каждый файл в соответствии с шаблоном.
+//
+// Возвращает:  Список структур Renamed_file - список
+//              переименнованных файлов.
+//              NULL, если не было переименованных файлов.
+GList* rename_files(GList* to_rename_list, Option* opt);

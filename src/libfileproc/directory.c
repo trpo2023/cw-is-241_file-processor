@@ -1,10 +1,12 @@
+#include <libfileproc/directory.h>
+
+#include <libfileproc/lexer.h>
+#include <libfileproc/rename.h>
+
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-
-#include <libfileproc/directory.h>
-#include <libfileproc/lexer.h>
-#include <libfileproc/rename.h>
 
 gint my_comparator(gconstpointer item1, gconstpointer item2)
 {
@@ -68,12 +70,15 @@ int is_file_match_pattern(char* filename, char* pattern)
     return *pattern == '\0' ? true : false;
 }
 
-void list_data(File_to_rename* p, void* filename_data, void* pattern_data)
+void list_data(
+        File_to_rename* ready_to_rename_file,
+        void* filename_data,
+        void* pattern_data)
 {
     char* name = malloc(sizeof(char) * MAX_LEN);
     strcpy(name, filename_data);
-    p->filename = name;
-    p->pattern = pattern_data;
+    ready_to_rename_file->filename = name;
+    ready_to_rename_file->pattern = pattern_data;
 }
 
 GList* get_files_patterns_list(GList* filesname, GList* samples)

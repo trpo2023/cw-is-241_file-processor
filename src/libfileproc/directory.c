@@ -19,7 +19,6 @@ GList* get_files_or_dirs_list(char* path, int attr)
     if (!dir) {
         return NULL;
     }
-
     while ((file = readdir(dir)) != NULL) {
         char* name = malloc(sizeof(char) * MAX_LEN);
         name = copy_file_name_or_path(file->d_type, file->d_name, path, name);
@@ -33,15 +32,16 @@ GList* get_files_or_dirs_list(char* path, int attr)
     return list;
 }
 
-char* copy_file_name_or_path(unsigned char file_type, char* file_name, char* path, char* name)
+char* copy_file_name_or_path(
+        unsigned char file_type, char* file_name, char* path, char* name)
 {
     if ((file_type & DT_REG) == DT_REG && strcmp(".", path) != 0) {
-            strcpy(name, path);
-            strcat(name, "/");
-            strcat(name, file_name);
-        } else {
-            strcpy(name, file_name);
-        }
+        strcpy(name, path);
+        strcat(name, "/");
+        strcat(name, file_name);
+    } else {
+        strcpy(name, file_name);
+    }
     return name;
 }
 
@@ -88,13 +88,14 @@ GList* get_files_patterns_list(GList* filesname, GList* samples)
             sample_parts* current_pattern_names = sample->data;
             if (is_file_match_pattern(
                         name, current_pattern_names->search_pattern)) {
-                File_to_rename* p = malloc(sizeof(File_to_rename));
+                File_to_rename* ready_to_rename_file
+                        = malloc(sizeof(File_to_rename));
                 list_data(
-                        p,
+                        ready_to_rename_file,
                         filename->data,
                         current_pattern_names->rename_pattern);
-                files_and_patterns_list
-                        = g_list_append(files_and_patterns_list, p);
+                files_and_patterns_list = g_list_append(
+                        files_and_patterns_list, ready_to_rename_file);
                 break;
             }
         }

@@ -23,4 +23,5 @@ void list_data(File_to_rename* p, void* filename_data, void* pattern_data);
 GList* get_files_patterns_list(GList* filesname, GList* patterns);
 // Функция для работы функции сортировки
 gint my_comparator(gconstpointer item1, gconstpointer item2);
-char* copy_file_name_or_path(unsigned char file_type, char* file_name, char* path, char* name);
+char* copy_file_name_or_path(
+        unsigned char file_type, char* file_name, char* path, char* name);

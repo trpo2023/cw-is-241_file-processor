@@ -74,7 +74,10 @@ char* get_name(char* file_path)
 
 void write_correct_index(char* new_name, char* dest, char* suffix, Option* opt)
 {
-    size_t suf_len = strlen(suffix);
+    size_t suf_len = 0;
+    if (suffix != NULL)
+        suf_len = strlen(suffix);
+
     int counter = 1;
     char* name = get_name(new_name);
     change_register(name, opt->name_register);
@@ -225,7 +228,12 @@ GList* rename_pair(GList* pair, GList* renamed_files, Option* opt)
     char new_name[MAX_LEN] = {0};
     char* old_name = ((File_to_rename*)pair->data)->filename;
     char* pattern = ((File_to_rename*)pair->data)->pattern;
-    get_new_name(old_name, pattern, new_name);
+
+    char* name = get_name(old_name);
+    if (old_name != name) {
+        name++;
+    }
+    get_new_name(name, pattern, new_name);
 
     char* newest_name = malloc(sizeof(char) * MAX_LEN);
     if (rename_file(old_name, new_name, newest_name, opt) == NULL) {

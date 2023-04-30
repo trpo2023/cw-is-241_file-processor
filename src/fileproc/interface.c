@@ -181,11 +181,14 @@ void free_renamed_files(void* data)
 
 void print_renamed_files(WINDOW* sub, GList* renamed_files)
 {
+    int x = getmaxx(sub);
     int j = 0;
     for (GList* i = renamed_files; i != NULL; i = i->next, j++) {
         char* old_name = ((RenamedFile*)i->data)->old_path;
         char* new_name = ((RenamedFile*)i->data)->new_path;
-        mvwprintw(sub, j + 4, 2, "%s -> %s", old_name, new_name);
+        char* str = write_correct_renamed_string(x, old_name, new_name);
+        mvwprintw(sub, j + 4, 2, "%s", str);
+        free(str);
     }
 }
 
@@ -194,6 +197,7 @@ void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
     int y, x;
     getmaxyx(menu, y, x);
     WINDOW* sub = init_sub_window(menu, y, x);
+    getmaxyx(sub, y, x);
     GList* renamed_file_list = NULL;
     if (g_list_length(sample) == 0) {
         mvwprintw(

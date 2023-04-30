@@ -22,13 +22,7 @@ GList* get_files_or_dirs_list(char* path, int attr)
 
     while ((file = readdir(dir)) != NULL) {
         char* name = malloc(sizeof(char) * MAX_LEN);
-        if ((file->d_type & DT_REG) == DT_REG && strcmp(".", path) != 0) {
-            strcpy(name, path);
-            strcat(name, "/");
-            strcat(name, file->d_name);
-        } else {
-            strcpy(name, file->d_name);
-        }
+        name = copy_file_name_or_path(file->d_type, file->d_name, path, name);
         if ((file->d_type & attr) == attr) {
             list = g_list_append(list, name);
         } else {
@@ -37,6 +31,18 @@ GList* get_files_or_dirs_list(char* path, int attr)
     }
     closedir(dir);
     return list;
+}
+
+char* copy_file_name_or_path(unsigned char file_type, char* file_name, char* path, char* name)
+{
+    if ((file_type & DT_REG) == DT_REG && strcmp(".", path) != 0) {
+            strcpy(name, path);
+            strcat(name, "/");
+            strcat(name, file_name);
+        } else {
+            strcpy(name, file_name);
+        }
+    return name;
 }
 
 int is_file_match_pattern(char* filename, char* pattern)

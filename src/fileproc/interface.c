@@ -72,7 +72,8 @@ WINDOW* init_menu()
 
 int select_items(WINDOW* win, const char* items[], int i, int offset, int max)
 {
-    int y = getmaxy(win);
+    int y, x;
+    getmaxyx(win, y, x);
     int ch;
     while ((ch = wgetch(win)) != KEY_F(10)) {
         mvwprintw(win, i + offset, 2, "%s", items[i]);
@@ -91,7 +92,7 @@ int select_items(WINDOW* win, const char* items[], int i, int offset, int max)
         mvwprintw_highlite(win, i + offset, 2, items[i]);
         if (max == 4) // menu options
         {
-            mvwprintw(win, y - 3, 2, "%-100s", items[i]);
+            mvwprintw(win, y - 3, 2, "%-*s", x / 2, items[i]);
         }
     }
 
@@ -173,8 +174,19 @@ void select_option(
 
 void free_renamed_files(void* data)
 {
+    free(((RenamedFile*)data)->old_path);
     free(((RenamedFile*)data)->new_path);
     free(data);
+}
+
+void print_renamed_files(WINDOW* sub, GList* renamed_files)
+{
+    int j = 0;
+    for (GList* i = renamed_files; i != NULL; i = i->next, j++) {
+        char* old_name = ((RenamedFile*)i->data)->old_path;
+        char* new_name = ((RenamedFile*)i->data)->new_path;
+        mvwprintw(sub, j + 4, 2, "%s -> %s", old_name, new_name);
+    }
 }
 
 void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
@@ -199,6 +211,7 @@ void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
     sprintf(str,
             "Успешно! Файлов переименовано: %d!",
             g_list_length(renamed_file_list));
+    print_renamed_files(sub, renamed_file_list);
     g_list_free_full(renamed_file_list, free_renamed_files);
     mvwprintw(sub, 3, 13, "%s", str);
     wrefresh(sub);

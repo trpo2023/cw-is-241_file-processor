@@ -1,6 +1,5 @@
 #include <libfileproc/directory.h>
 
-#include <libfileproc/lexer.h>
 #include <libfileproc/rename.h>
 
 void clean_memory(GList* files_patterns_list, GList* files_list)

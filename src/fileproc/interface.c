@@ -214,7 +214,7 @@ void print_new_page(
 
 // a -> y offset
 // b -> x offset
-char* get_dir(
+char* get_item(
         WINDOW* sub,
         GList* dir_list,
         int y,
@@ -281,7 +281,7 @@ char* select_dir(WINDOW* menu, char* current_dir)
     print_items(sub, dir_list, &dir_cnt, 3, 2);
     mvwprintw_highlite(sub, 2, 2, (char*)dir_list->data);
 
-    dir = get_dir(sub, dir_list, y - 5, dir_len, dir_cnt, 3, 2);
+    dir = get_item(sub, dir_list, y - 5, dir_len, dir_cnt, 3, 2);
     strcpy(current_dir, dir);
 
     wclear(sub);
@@ -314,12 +314,13 @@ void print_renamed_list(WINDOW* sub, GList* renamed_list, int x, int y)
         return;
     }
 
-    renamed_list = g_list_sort(renamed_list, my_comparator);
     int str_cnt = 0;
     size_t size = g_list_length(renamed_list);
+
     print_items(sub, renamed_list, &str_cnt, 5, 4);
     mvwprintw_highlite(sub, 4, 2, (char*)renamed_list->data);
-    get_dir(sub, renamed_list, y - 5, size, str_cnt, 5, 4);
+
+    get_item(sub, renamed_list, y - 5, size, str_cnt, 5, 4);
 }
 
 void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
@@ -347,7 +348,9 @@ void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
             g_list_length(renamed_file_list));
     mvwprintw(sub, 3, 13, "%s", str);
     GList* list = get_renamed_list(sub, renamed_file_list);
+    list = g_list_sort(list, my_comparator);
     print_renamed_list(sub, list, x, y);
+    g_list_free_full(list, free);
     g_list_free_full(renamed_file_list, free_renamed_files);
     wrefresh(sub);
     wclear(sub);

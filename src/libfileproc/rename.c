@@ -74,7 +74,10 @@ char* get_name(char* file_path)
 
 void write_correct_index(char* new_name, char* dest, char* suffix, Option* opt)
 {
-    size_t suf_len = strlen(suffix);
+    size_t suf_len = 0;
+    if (suffix != NULL)
+        suf_len = strlen(suffix);
+
     int counter = 1;
     char* name = get_name(new_name);
     change_register(name, opt->name_register);
@@ -95,7 +98,8 @@ void write_correct_index(char* new_name, char* dest, char* suffix, Option* opt)
 
 int get_correct_name(char* old_path, char* new_name, char* dest, Option* opt)
 {
-    if (file_exist(old_path) == 0 || strcmp(old_path, new_name) == 0)
+    if ((file_exist(old_path) == 0 || strcmp(old_path, new_name) == 0)
+        && opt->name_register == R_DEFAULT)
         return -1;
 
     size_t dest_len = strlen(new_name);
@@ -143,24 +147,30 @@ void get_new_name(char* name, char* pattern, char* dest)
 
     for (int i = 0, j = 0, k = 0; k < pattern_size; i++) {
         if (j >= name_size) {
-            dest[i] = pattern[k + 1];
-            k++;
+            if (pattern[k] == '.' && pattern[k - 1] != '*') {
+                dest[i] = pattern[k];
+                dest[i + 1] = pattern[k + 1];
+                k++;
+                i++;
+            } else if (pattern[k + 1] == '\0' && k - i == 0) {
+                dest[i] = pattern[k++];
+            } else {
+                dest[i] = pattern[k + 1];
+                k++;
+            }
             continue;
         }
         if (pattern[k] == '*' && name[j] != pattern[k + 1] && name[j] != '.') {
-            dest[i] = name[j];
-            j++;
+            dest[i] = name[j++];
         } else if (pattern[k] == '*' && name[j] == '.') {
             dest[i] = pattern[k + 1];
             k += 2;
             j++;
         } else if (pattern[k] == '*' && name[j] == pattern[k + 1]) {
-            dest[i] = name[j];
-            j++;
+            dest[i] = name[j++];
             k += 2;
         } else if (pattern[k] == '?' || pattern[k] == name[j]) {
-            dest[i] = name[j];
-            j++;
+            dest[i] = name[j++];
             k++;
         } else if (
                 pattern[k] == '.' && name[j] != '.' && pattern[k - 1] == '?') {
@@ -170,8 +180,7 @@ void get_new_name(char* name, char* pattern, char* dest)
             dest[i] = name[j++];
             k++;
         } else if (pattern[k] != name[j]) {
-            dest[i] = pattern[k];
-            k++;
+            dest[i] = pattern[k++];
         }
     }
 }
@@ -224,7 +233,12 @@ GList* rename_pair(GList* pair, GList* renamed_files, Option* opt)
     char new_name[MAX_LEN] = {0};
     char* old_name = ((File_to_rename*)pair->data)->filename;
     char* pattern = ((File_to_rename*)pair->data)->pattern;
-    get_new_name(old_name, pattern, new_name);
+
+    char* name = get_name(old_name);
+    if (old_name != name) {
+        name++;
+    }
+    get_new_name(name, pattern, new_name);
 
     char* newest_name = malloc(sizeof(char) * MAX_LEN);
     if (rename_file(old_name, new_name, newest_name, opt) == NULL) {

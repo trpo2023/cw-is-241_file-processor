@@ -90,6 +90,20 @@ CTEST(rename, get_new_name)
     expect = "text.jpg";
     get_new_name(name, pattern, dest7);
     ASSERT_STR(expect, dest7);
+
+    name = "filename";
+    pattern = "filename.old";
+    char dest8[MAX_LEN] = {0};
+    expect = "filename.old";
+    get_new_name(name, pattern, dest8);
+    ASSERT_STR(expect, dest8);
+
+    name = "filename";
+    pattern = "filename2";
+    char dest9[MAX_LEN] = {0};
+    expect = "filename2";
+    get_new_name(name, pattern, dest9);
+    ASSERT_STR(expect, dest9);
 }
 
 CTEST(rename, get_correct_name_default)

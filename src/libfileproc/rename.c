@@ -147,24 +147,30 @@ void get_new_name(char* name, char* pattern, char* dest)
 
     for (int i = 0, j = 0, k = 0; k < pattern_size; i++) {
         if (j >= name_size) {
-            dest[i] = pattern[k + 1];
-            k++;
+            if (pattern[k] == '.' && pattern[k - 1] != '*') {
+                dest[i] = pattern[k];
+                dest[i + 1] = pattern[k + 1];
+                k++;
+                i++;
+            } else if (pattern[k + 1] == '\0' && k - i == 0) {
+                dest[i] = pattern[k++];
+            } else {
+                dest[i] = pattern[k + 1];
+                k++;
+            }
             continue;
         }
         if (pattern[k] == '*' && name[j] != pattern[k + 1] && name[j] != '.') {
-            dest[i] = name[j];
-            j++;
+            dest[i] = name[j++];
         } else if (pattern[k] == '*' && name[j] == '.') {
             dest[i] = pattern[k + 1];
             k += 2;
             j++;
         } else if (pattern[k] == '*' && name[j] == pattern[k + 1]) {
-            dest[i] = name[j];
-            j++;
+            dest[i] = name[j++];
             k += 2;
         } else if (pattern[k] == '?' || pattern[k] == name[j]) {
-            dest[i] = name[j];
-            j++;
+            dest[i] = name[j++];
             k++;
         } else if (
                 pattern[k] == '.' && name[j] != '.' && pattern[k - 1] == '?') {
@@ -174,8 +180,7 @@ void get_new_name(char* name, char* pattern, char* dest)
             dest[i] = name[j++];
             k++;
         } else if (pattern[k] != name[j]) {
-            dest[i] = pattern[k];
-            k++;
+            dest[i] = pattern[k++];
         }
     }
 }

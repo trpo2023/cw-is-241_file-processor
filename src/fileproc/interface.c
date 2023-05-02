@@ -343,11 +343,17 @@ void get_and_print_renamed_list(
 
 void print_succes_message(GList* renamed_file_list, WINDOW* sub)
 {
+    int x = getmaxx(sub);
+    if (g_list_length(renamed_file_list) == 0) {
+        char str[] = "По введённым шаблонам файлов не найдено";
+        mvwprintw(sub, 3, (x - 39) / 2, "%s", str);
+        return;
+    }
     char str[MAX_LEN];
     sprintf(str,
             "Успешно! Файлов переименовано: %d!",
             g_list_length(renamed_file_list));
-    mvwprintw(sub, 3, 13, "%s", str);
+    mvwprintw(sub, 3, (x - 34) / 2, "%s", str);
 }
 
 void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
@@ -358,16 +364,13 @@ void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
     getmaxyx(sub, y, x);
     GList* renamed_file_list = NULL;
     if (g_list_length(sample) == 0) {
-        mvwprintw(
-                sub,
-                1,
-                1,
-                "Сперва введите шаблоны, а потом запускайте "
-                "переименование");
+        char stri[] = "Сперва введите шаблоны, после запускайте переименование";
+        mvwprintw(sub, 1, (x - 55) / 2, "%s", stri);
         wrefresh(sub);
         return;
     }
-    mvwprintw(sub, 1, 15, "Идет процесс переименования...");
+    mvwprintw(sub, 1, (x - 30) / 2, "Идет процесс переименования...");
+    wrefresh(sub);
     renamed_file_list = rename_and_get_renamed_list(sample, dir_path, opt);
     print_succes_message(renamed_file_list, sub);
     get_and_print_renamed_list(sub, renamed_file_list, x, y);

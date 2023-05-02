@@ -214,7 +214,9 @@ void print_new_page(
 {
     int x = getmaxx(sub);
     print_items(sub, list, cnt, a, b);
-    mvwprintw(sub, 1, x - 7, "%d/%d", p + 1, max_p + 1);
+    char counter[MAX_LEN] = {0};
+    sprintf(counter, "%d/%d", p + 1, max_p + 1);
+    mvwprintw(sub, 1, x - (strlen(counter) + 2), "%s", counter);
 }
 
 // a -> y offset
@@ -233,7 +235,9 @@ char* get_item(
     GList* pages[max_pages];
 
     // page counter
-    mvwprintw(sub, 1, x - 7, "%d/%ld", page + 1, max_pages + 1);
+    char counter[MAX_LEN] = {0};
+    sprintf(counter, "%d/%ld", page + 1, max_pages + 1);
+    mvwprintw(sub, 1, x - (strlen(counter) + 2), "%s", counter);
 
     while ((ch = wgetch(sub)) != 10) { // 10 - KEY_ENTER
         mvwprintw(sub, i + b, 2, "%s", (char*)dir_list->data);

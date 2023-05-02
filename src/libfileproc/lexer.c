@@ -4,21 +4,16 @@
 
 char* skip_space(char* string) // пропуск пробелов
 {
-    while (*string == ' ') {
+    while (*string == ' ')
         string++;
-    }
     return string;
 }
 
 char* skip_to_colon(char* string) // Пропуск всех символов до ':' или '\0'
 {
-    while (1) {
-        if (*string == ':')
-            return string;
-        if (*string == '\0')
-            return string;
+    while (*string != ':' && *string != '\0')
         string++;
-    }
+    return string;
 }
 
 int check_search_sample(char** string) // проверка шаблона для поиска
@@ -147,59 +142,45 @@ int check_rename_sample(char** string) // проверка шаблона для
     return success;
 }
 
-int check_sample_string(
-        char* input_string) // проверка полной строки с шаблонами
+int check_sample_string(char* input_string)
 {
-    char* test_string = input_string;
-    int search_sample = check_search_sample(&test_string);
+    int search_sample = check_search_sample(&input_string);
     if (search_sample)
         return search_sample;
-    int rename_sample = check_rename_sample(&test_string);
+    int rename_sample = check_rename_sample(&input_string);
     if (rename_sample)
         return rename_sample;
     return success;
 }
 
 // Взятие отдельного паттерна из всей строки
-char* get_pattern(char* input_string, char** pattern)
+char* get_pattern(char* inp_str, char* pattern)
 {
-    char* buffer = *pattern;
-    while (1) {
-        if (*input_string == ' ')
-            break;
-        if (*input_string == ':')
-            break;
-        if (*input_string == '\0')
-            break;
-        *buffer = *input_string;
-        buffer++;
-        input_string++;
+    while (*inp_str != ' ' && *inp_str != ':' && *inp_str != '\0') {
+        *pattern = *inp_str;
+        pattern++;
+        inp_str++;
     }
-    *buffer = '\0';
-    return input_string;
+    *pattern = '\0';
+    return inp_str;
 }
 
 // Сдвинуть указатель к началу следующего паттерна
-char* to_rename_pattern(char* input_string)
+char* to_rename_pattern(char* inp_str)
 {
-    while (1) {
-        if (*input_string == ' ')
-            input_string++;
-        else if (*input_string == ':')
-            input_string++;
-        else
-            return input_string;
-    }
+    while (*inp_str == ' ' || *inp_str == ':')
+        inp_str++;
+
+    return inp_str;
 }
 
 // Разбить строку на паттерны
-sample_parts split_sample(char* input_string, sample_parts* patterns)
+void split_sample(char* input_string, sample_parts* patterns)
 {
     input_string = skip_space(input_string);
-    input_string = get_pattern(input_string, &(patterns->search_pattern));
+    input_string = get_pattern(input_string, patterns->search_pattern);
     input_string = to_rename_pattern(input_string);
-    get_pattern(input_string, &(patterns->rename_pattern));
-    return *patterns;
+    get_pattern(input_string, patterns->rename_pattern);
 }
 
 // Разделить строку и записать в структуру
@@ -208,9 +189,9 @@ int get_sample(char* input_string, sample_parts* patterns)
     int check = check_sample_string(input_string);
     if (check)
         return check;
-    patterns->search_pattern = malloc(256);
-    patterns->rename_pattern = malloc(256);
-    *patterns = split_sample(input_string, patterns);
+    patterns->search_pattern = malloc(sizeof(char) * MAX_LEN);
+    patterns->rename_pattern = malloc(sizeof(char) * MAX_LEN);
+    split_sample(input_string, patterns);
     return success;
 }
 

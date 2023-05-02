@@ -99,6 +99,13 @@ int select_items(WINDOW* win, const char* items[], int i, int offset, int max)
     return KEY_F(10);
 }
 
+void remove_current_window(WINDOW* sub)
+{
+    wclear(sub);
+    wrefresh(sub);
+    delwin(sub);
+}
+
 WINDOW* init_sub_window(WINDOW* menu, int max_y, int max_x)
 {
     WINDOW* sub = subwin(menu, max_y - 2, max_x / 2 - 1, 2, max_x / 2);
@@ -167,9 +174,7 @@ void select_option(
         mvwprintw_highlite(sub, 3, 2, options[i]);
     }
 
-    wclear(sub);
-    wrefresh(sub);
-    delwin(sub);
+    remove_current_window(sub);
 }
 
 void free_renamed_files(void* data)
@@ -209,7 +214,9 @@ void print_new_page(
 {
     int x = getmaxx(sub);
     print_items(sub, list, cnt, a, b);
-    mvwprintw(sub, 1, x - 7, "%d/%d", p + 1, max_p + 1);
+    char counter[MAX_LEN] = {0};
+    sprintf(counter, "%d/%d", p + 1, max_p + 1);
+    mvwprintw(sub, 1, x - (strlen(counter) + 2), "%s", counter);
 }
 
 // a -> y offset
@@ -228,7 +235,9 @@ char* get_item(
     GList* pages[max_pages];
 
     // page counter
-    mvwprintw(sub, 1, x - 7, "%d/%ld", page + 1, max_pages + 1);
+    char counter[MAX_LEN] = {0};
+    sprintf(counter, "%d/%ld", page + 1, max_pages + 1);
+    mvwprintw(sub, 1, x - (strlen(counter) + 2), "%s", counter);
 
     while ((ch = wgetch(sub)) != 10) { // 10 - KEY_ENTER
         mvwprintw(sub, i + b, 2, "%s", (char*)dir_list->data);
@@ -284,9 +293,7 @@ char* select_dir(WINDOW* menu, char* current_dir)
     dir = get_item(sub, dir_list, y - 5, dir_len, dir_cnt, 3, 2);
     strcpy(current_dir, dir);
 
-    wclear(sub);
-    wrefresh(sub);
-    delwin(sub);
+    remove_current_window(sub);
     g_list_free_full(dir_list, free);
 
     return current_dir;
@@ -323,6 +330,36 @@ void print_renamed_list(WINDOW* sub, GList* renamed_list, int x, int y)
     get_item(sub, renamed_list, y - 5, size, str_cnt, 5, 4);
 }
 
+void free_renamed_list(GList* renamed_file_list, GList* list)
+{
+    g_list_free_full(list, free);
+    g_list_free_full(renamed_file_list, free_renamed_files);
+}
+
+void get_and_print_renamed_list(
+        WINDOW* sub, GList* renamed_file_list, int x, int y)
+{
+    GList* list = get_renamed_list(sub, renamed_file_list);
+    list = g_list_sort(list, my_comparator);
+    print_renamed_list(sub, list, x, y);
+    free_renamed_list(renamed_file_list, list);
+}
+
+void print_succes_message(GList* renamed_file_list, WINDOW* sub)
+{
+    int x = getmaxx(sub);
+    if (g_list_length(renamed_file_list) == 0) {
+        char str[] = "По введённым шаблонам файлов не найдено";
+        mvwprintw(sub, 3, (x - 39) / 2, "%s", str);
+        return;
+    }
+    char str[MAX_LEN];
+    sprintf(str,
+            "Успешно! Файлов переименовано: %d!",
+            g_list_length(renamed_file_list));
+    mvwprintw(sub, 3, (x - 34) / 2, "%s", str);
+}
+
 void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
 {
     int y, x;
@@ -331,30 +368,17 @@ void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
     getmaxyx(sub, y, x);
     GList* renamed_file_list = NULL;
     if (g_list_length(sample) == 0) {
-        mvwprintw(
-                sub,
-                1,
-                1,
-                "Сперва введите шаблоны, а потом запускайте "
-                "переименование");
+        char stri[] = "Сперва введите шаблоны, после запускайте переименование";
+        mvwprintw(sub, 1, (x - 55) / 2, "%s", stri);
         wrefresh(sub);
         return;
     }
-    mvwprintw(sub, 1, 15, "Идет процесс переименования...");
-    renamed_file_list = rename_and_get_renamed_list(sample, dir_path, opt);
-    char str[MAX_LEN];
-    sprintf(str,
-            "Успешно! Файлов переименовано: %d!",
-            g_list_length(renamed_file_list));
-    mvwprintw(sub, 3, 13, "%s", str);
-    GList* list = get_renamed_list(sub, renamed_file_list);
-    list = g_list_sort(list, my_comparator);
-    print_renamed_list(sub, list, x, y);
-    g_list_free_full(list, free);
-    g_list_free_full(renamed_file_list, free_renamed_files);
+    mvwprintw(sub, 1, (x - 30) / 2, "Идет процесс переименования...");
     wrefresh(sub);
-    wclear(sub);
-    delwin(sub);
+    renamed_file_list = rename_and_get_renamed_list(sample, dir_path, opt);
+    print_succes_message(renamed_file_list, sub);
+    get_and_print_renamed_list(sub, renamed_file_list, x, y);
+    remove_current_window(sub);
 }
 
 int print_input_strings(WINDOW* sub, GList* input_strings)

@@ -443,7 +443,7 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
         return samples;
     }
 
-    for (int i = cnt; i < max_ninstr && str[0] != '\0'; i++) {
+    for (int i = cnt; i < max_ninstr; i++) {
         str = malloc(x - 3);
         mvwgetnstr(sub, 2 + i, 2, str, x - 3);
         if (str[0] == '\0') {

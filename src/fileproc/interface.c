@@ -392,21 +392,8 @@ int print_input_strings(WINDOW* sub, GList* input_strings)
     return cnt;
 }
 
-GList* pattern_input(WINDOW* menu, GList** input_strings, GList* patterns)
+int check_max_ninstr(WINDOW* sub, int cnt, int max_ninstr)
 {
-    int y, x;
-    getmaxyx(menu, y, x);
-    WINDOW* sub = init_sub_window(menu, y, x);
-    mvwprintw(sub, 1, 1, "Введите шаблон:");
-
-    getmaxyx(sub, y, x);
-
-    int max_ninstr = y - 3;
-    curs_set(1);
-    echo();
-    int cnt = print_input_strings(sub, *input_strings);
-
-    mvwprintw(sub, 1, x - 10, "%d/%d", cnt, max_ninstr);
     if (cnt == max_ninstr) {
         mvwprintw(sub, 1, 1, "Введено максимальное количество шаблонов!");
         curs_set(0);
@@ -415,56 +402,80 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* patterns)
 
         wclear(sub);
         delwin(sub);
-        return patterns;
+        return -1;
     }
+    return 0;
+}
 
-    char* str = malloc(x - 2);
-    mvwgetnstr(sub, cnt + 2, 2, str, x - 3);
+WINDOW* open_pattern_window(WINDOW* menu, int* x, int* y)
+{
+    getmaxyx(menu, *y, *x);
+    WINDOW* sub = init_sub_window(menu, *y, *x);
+    mvwprintw(sub, 1, 1, "Введите шаблон:");
+    getmaxyx(sub, *y, *x);
+    curs_set(1);
+    echo();
+    return sub;
+}
 
-    int exit_code;
-    if (str[0] != '\0') {
-        patterns = add_patterns(patterns, str, &exit_code);
-        if (exit_code == 0) {
-            *input_strings = g_list_append(*input_strings, str);
-            mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
-        } else {
-            free(str);
-            mvwprintw(sub, cnt + 2, 1, "╳");
-            mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
-        }
-    } else {
-        free(str);
-        curs_set(0);
-        noecho();
-
-        wclear(sub);
-        delwin(sub);
-
-        return patterns;
-    }
-
-    for (int i = cnt; i < max_ninstr; i++) {
-        str = malloc(x - 3);
-        mvwgetnstr(sub, 2 + i, 2, str, x - 3);
-        if (str[0] == '\0') {
-            free(str);
-            break;
-        }
-        patterns = add_patterns(patterns, str, &exit_code);
-        if (exit_code == 0) {
-            *input_strings = g_list_append(*input_strings, str);
-        } else {
-            mvwprintw(sub, cnt + 2, 1, "╳");
-            free(str);
-        }
-        mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
-    }
-
+void close_pattern_window(WINDOW* sub)
+{
     curs_set(0);
     noecho();
-
     wclear(sub);
     delwin(sub);
+}
+
+void print_counter(WINDOW* sub, int x, int cnt, int max_ninstr)
+{
+    mvwprintw(sub, 1, x - 10, "%d/%d", cnt, max_ninstr);
+}
+
+int get_string(
+        WINDOW* sub,
+        int* cnt,
+        int max_ninstr,
+        int x,
+        char* str,
+        GList** patterns,
+        GList** input_strings)
+{
+    str = malloc(x - 2);
+    mvwgetnstr(sub, *cnt + 2, 2, str, x - 3);
+    if (str[0] == '\0') {
+        free(str);
+        return -1;
+    }
+    int exit_code;
+    *patterns = add_patterns(*patterns, str, &exit_code);
+    if (exit_code == 0) {
+        *input_strings = g_list_append(*input_strings, str);
+    } else {
+        mvwprintw(sub, *cnt + 2, 1, "╳");
+        free(str);
+    }
+    print_counter(sub, x, ++(*cnt), max_ninstr);
+    return 0;
+}
+
+GList* pattern_input(WINDOW* menu, GList** input_strings, GList* patterns)
+{
+    int y, x;
+    WINDOW* sub = open_pattern_window(menu, &x, &y);
+    int max_ninstr = y - 3;
+
+    int cnt = print_input_strings(sub, *input_strings);
+
+    print_counter(sub, x, cnt, max_ninstr);
+    if (check_max_ninstr(sub, cnt, max_ninstr))
+        return patterns;
+    char* str = NULL;
+
+    while (cnt < max_ninstr)
+        if (get_string(sub, &cnt, max_ninstr, x, str, &patterns, input_strings))
+            break;
+
+    close_pattern_window(sub);
 
     return patterns;
 }

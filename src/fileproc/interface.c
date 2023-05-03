@@ -19,7 +19,7 @@ const char* menu_items[] = {
 const char* options[] = {
         "Регистр", "Восстановить значения по умолчанию", "<-Вернуться в меню"};
 
-void clean_data(Option* opt, GList** input_strings, GList** samples);
+void clean_data(Option* opt, GList** input_strings, GList** patterns);
 
 void check_term_size(int x, int y)
 {
@@ -392,7 +392,7 @@ int print_input_strings(WINDOW* sub, GList* input_strings)
     return cnt;
 }
 
-GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
+GList* pattern_input(WINDOW* menu, GList** input_strings, GList* patterns)
 {
     int y, x;
     getmaxyx(menu, y, x);
@@ -415,7 +415,7 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
 
         wclear(sub);
         delwin(sub);
-        return samples;
+        return patterns;
     }
 
     char* str = malloc(x - 2);
@@ -423,7 +423,7 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
 
     int exit_code;
     if (str[0] != '\0') {
-        samples = add_sample(samples, str, &exit_code);
+        patterns = add_patterns(patterns, str, &exit_code);
         if (exit_code == 0) {
             *input_strings = g_list_append(*input_strings, str);
             mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
@@ -440,7 +440,7 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
         wclear(sub);
         delwin(sub);
 
-        return samples;
+        return patterns;
     }
 
     for (int i = cnt; i < max_ninstr; i++) {
@@ -450,7 +450,7 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
             free(str);
             break;
         }
-        samples = add_sample(samples, str, &exit_code);
+        patterns = add_patterns(patterns, str, &exit_code);
         if (exit_code == 0) {
             *input_strings = g_list_append(*input_strings, str);
         } else {
@@ -466,26 +466,26 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
     wclear(sub);
     delwin(sub);
 
-    return samples;
+    return patterns;
 }
 
-void clean_data(Option* opt, GList** input_strings, GList** samples)
+void clean_data(Option* opt, GList** input_strings, GList** patterns)
 {
     opt->name_register = R_DEFAULT;
     if (*input_strings != NULL) {
         g_list_free_full(*input_strings, free);
         *input_strings = NULL;
     }
-    if (*samples != NULL) {
-        g_list_free_full(*samples, free_Splitted_patterns);
-        *samples = NULL;
+    if (*patterns != NULL) {
+        g_list_free_full(*patterns, free_Splitted_patterns);
+        *patterns = NULL;
     }
 }
 
 void start(WINDOW* menu)
 {
     GList* input_strings = NULL;
-    GList* samples = NULL;
+    GList* patterns = NULL;
     Option option = {0};
     char current_dir[MAX_LEN] = ".";
     int y = getmaxy(menu);
@@ -496,22 +496,23 @@ void start(WINDOW* menu)
         wrefresh(menu);
         switch (i) {
         case INPUT_PATTERN:
-            samples = pattern_input(menu, &input_strings, samples);
+            patterns = pattern_input(menu, &input_strings, patterns);
             break;
         case SELECT_DIR:
             select_dir(menu, current_dir);
             mvwprintw(menu, y - 2, 2, "Выбранный каталог: %-30s", current_dir);
             break;
         case PROCESS:
-            process(menu, samples, current_dir, &option);
-            clean_data(&option, &input_strings, &samples);
+            process(menu, patterns, current_dir, &option);
+            clean_data(&option, &input_strings, &patterns);
             break;
         case SELECT_OPT:
-            select_option(menu, &option, &input_strings, &samples, current_dir);
+            select_option(
+                    menu, &option, &input_strings, &patterns, current_dir);
             break;
         }
         mvwprintw_highlite(menu, i + 1, 2, menu_items[i]);
     }
 
-    clean_data(&option, &input_strings, &samples);
+    clean_data(&option, &input_strings, &patterns);
 }

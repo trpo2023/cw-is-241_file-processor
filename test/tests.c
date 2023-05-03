@@ -163,21 +163,21 @@ CTEST(rename, get_correct_name_lower)
     ASSERT_STR(expect, dest);
 }
 
-CTEST(lexer, check_sample_string)
+CTEST(lexer, check_input_string)
 {
-    int result_0 = check_sample_string("*.txt:  *");
-    int result_1 = check_sample_string("**.txt:*");
-    int result_2 = check_sample_string("?*test.txt:*");
-    int result_3 = check_sample_string("       :*.txt");
-    int result_4 = check_sample_string("test.txt:    ");
-    int result_5 = check_sample_string("test.txt   *.txt");
-    int result_6 = check_sample_string("test.txt : *.txt : *");
-    int result_7 = check_sample_string("test.txt 1.bin : one_piece.*");
-    int result_8 = check_sample_string("test.txt : *.txt  0");
-    int result_9 = check_sample_string("*/.txt:  *");
+    int result_0 = check_input_string("*.txt:  *");
+    int result_1 = check_input_string("**.txt:*");
+    int result_2 = check_input_string("?*test.txt:*");
+    int result_3 = check_input_string("       :*.txt");
+    int result_4 = check_input_string("test.txt:    ");
+    int result_5 = check_input_string("test.txt   *.txt");
+    int result_6 = check_input_string("test.txt : *.txt : *");
+    int result_7 = check_input_string("test.txt 1.bin : one_piece.*");
+    int result_8 = check_input_string("test.txt : *.txt  0");
+    int result_9 = check_input_string("*/.txt:  *");
 
     int expected_0 = 0;
-    int expected_1 = 1;
+    int expected_1 = -1;
 
     ASSERT_EQUAL(expected_0, result_0);
     ASSERT_EQUAL(expected_1, result_1);
@@ -191,13 +191,13 @@ CTEST(lexer, check_sample_string)
     ASSERT_EQUAL(expected_1, result_9);
 }
 
-CTEST(lexer, get_sample)
+CTEST(lexer, get_patterns)
 {
     char sample[] = "*.txt:  *";
     char search_pattern[] = "*.txt";
     char rename_pattern[] = "*";
-    sample_parts patterns[10];
-    int returned = get_sample(sample, &patterns[3]);
+    Splitted_patterns patterns[10];
+    int returned = get_patterns(sample, &patterns[3]);
     int search_pattern_result
             = strcmp(search_pattern, patterns[3].search_pattern);
     int rename_pattern_result
@@ -219,9 +219,9 @@ CTEST(directory, get_files_patterns_list)
     filesname = g_list_append(filesname, "test.h");
     filesname = g_list_append(filesname, "tost.txt");
 
-    sample_parts* part1 = malloc(sizeof(sample_parts));
-    sample_parts* part2 = malloc(sizeof(sample_parts));
-    sample_parts* part3 = malloc(sizeof(sample_parts));
+    Splitted_patterns* part1 = malloc(sizeof(Splitted_patterns));
+    Splitted_patterns* part2 = malloc(sizeof(Splitted_patterns));
+    Splitted_patterns* part3 = malloc(sizeof(Splitted_patterns));
     part1->rename_pattern = "*.jpg";
     part1->search_pattern = "*.txt";
     part2->rename_pattern = "*.pdf";

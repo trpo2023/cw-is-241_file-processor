@@ -1,5 +1,4 @@
 #include <glib.h>
-#include <string.h>
 
 #include <libfileproc/lexer.h>
 
@@ -91,7 +90,7 @@ int check_pattern(char* pattern)
     return 0;
 }
 
-int check_sample_string(char* input_string)
+int check_input_string(char* input_string)
 {
     if (check_wrong_symbols(input_string))
         return -1;
@@ -127,7 +126,7 @@ char* to_rename_pattern(char* inp_str)
     return inp_str;
 }
 
-void split_sample(char* input_string, Splitted_patterns* patterns)
+void split_input_string(char* input_string, Splitted_patterns* patterns)
 {
     input_string = skip_space(input_string);
     input_string = get_pattern(input_string, patterns->search_pattern);
@@ -135,23 +134,24 @@ void split_sample(char* input_string, Splitted_patterns* patterns)
     get_pattern(input_string, patterns->rename_pattern);
 }
 
-int get_sample(char* input_string, Splitted_patterns* patterns)
+int get_patterns(char* input_string, Splitted_patterns* patterns)
 {
-    if (check_sample_string(input_string))
+    if (check_input_string(input_string))
         return -1;
     patterns->search_pattern = malloc(sizeof(char) * MAX_LEN);
     patterns->rename_pattern = malloc(sizeof(char) * MAX_LEN);
-    split_sample(input_string, patterns);
+    split_input_string(input_string, patterns);
     return 0;
 }
 
-GList* add_sample(GList* patterns, char* input_string, int* exit_code)
+GList* add_patterns(GList* patterns, char* input_string, int* exit_code)
 {
     Splitted_patterns* pattern = malloc(sizeof(Splitted_patterns));
-    *exit_code = get_sample(input_string, pattern);
-    if (*exit_code == 0) {
+    *exit_code = get_patterns(input_string, pattern);
+    if (*exit_code == 0)
         patterns = g_list_append(patterns, pattern);
-    }
+    else
+        free(pattern);
     return patterns;
 }
 

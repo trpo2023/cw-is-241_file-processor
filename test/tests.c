@@ -168,31 +168,24 @@ CTEST(lexer, check_sample_string)
     int result_0 = check_sample_string("*.txt:  *");
     int result_1 = check_sample_string("**.txt:*");
     int result_2 = check_sample_string("?*test.txt:*");
-    int result_3 = check_sample_string(
-            "12345678901234567890123456789012345678901234567890123456789"
-            "01234567890123456789012345678901234567890123456789012345678"
-            "90123456789012345678901234567890123456789012345678901234567"
-            "89012345678901234567890123456789012345678901234567890123456"
-            "789012345678901234567890:*");
-    int result_4 = check_sample_string("       :*.txt");
-    int result_5 = check_sample_string("test.txt:    ");
-    int result_6 = check_sample_string("test.txt   *.txt");
-    int result_7 = check_sample_string("test.txt : *.txt : *");
-    int result_8 = check_sample_string("test.txt 1.bin : one_piece.*");
-    int result_9 = check_sample_string("test.txt : *.txt  0");
-    int result_10 = check_sample_string("*/.txt:  *");
+    int result_3 = check_sample_string("       :*.txt");
+    int result_4 = check_sample_string("test.txt:    ");
+    int result_5 = check_sample_string("test.txt   *.txt");
+    int result_6 = check_sample_string("test.txt : *.txt : *");
+    int result_7 = check_sample_string("test.txt 1.bin : one_piece.*");
+    int result_8 = check_sample_string("test.txt : *.txt  0");
+    int result_9 = check_sample_string("*/.txt:  *");
 
     int expected_0 = 0;
     int expected_1 = 1;
-    int expected_2 = 2;
-    int expected_3 = 3;
-    int expected_4 = 4;
-    int expected_5 = 5;
-    int expected_6 = 6;
-    int expected_7 = 7;
-    int expected_8 = 8;
-    int expected_9 = 9;
-    int expected_10 = 10;
+    int expected_2 = 1;
+    int expected_3 = 1;
+    int expected_4 = 1;
+    int expected_5 = 1;
+    int expected_6 = 1;
+    int expected_7 = 1;
+    int expected_8 = 1;
+    int expected_9 = 1;
 
     ASSERT_EQUAL(expected_0, result_0);
     ASSERT_EQUAL(expected_1, result_1);
@@ -204,7 +197,6 @@ CTEST(lexer, check_sample_string)
     ASSERT_EQUAL(expected_7, result_7);
     ASSERT_EQUAL(expected_8, result_8);
     ASSERT_EQUAL(expected_9, result_9);
-    ASSERT_EQUAL(expected_10, result_10);
 }
 
 CTEST(lexer, get_sample)

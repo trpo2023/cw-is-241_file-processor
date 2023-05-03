@@ -90,7 +90,7 @@ GList* get_files_patterns_list(GList* filesname, GList* samples)
         if (name != filename->data)
             name++;
         for (GList* sample = samples; sample != NULL; sample = sample->next) {
-            sample_parts* current_pattern_names = sample->data;
+            Splitted_patterns* current_pattern_names = sample->data;
             if (is_file_match_pattern(
                         name, current_pattern_names->search_pattern)) {
                 File_to_rename* ready_to_rename_file

@@ -178,25 +178,17 @@ CTEST(lexer, check_sample_string)
 
     int expected_0 = 0;
     int expected_1 = 1;
-    int expected_2 = 1;
-    int expected_3 = 1;
-    int expected_4 = 1;
-    int expected_5 = 1;
-    int expected_6 = 1;
-    int expected_7 = 1;
-    int expected_8 = 1;
-    int expected_9 = 1;
 
     ASSERT_EQUAL(expected_0, result_0);
     ASSERT_EQUAL(expected_1, result_1);
-    ASSERT_EQUAL(expected_2, result_2);
-    ASSERT_EQUAL(expected_3, result_3);
-    ASSERT_EQUAL(expected_4, result_4);
-    ASSERT_EQUAL(expected_5, result_5);
-    ASSERT_EQUAL(expected_6, result_6);
-    ASSERT_EQUAL(expected_7, result_7);
-    ASSERT_EQUAL(expected_8, result_8);
-    ASSERT_EQUAL(expected_9, result_9);
+    ASSERT_EQUAL(expected_1, result_2);
+    ASSERT_EQUAL(expected_1, result_3);
+    ASSERT_EQUAL(expected_1, result_4);
+    ASSERT_EQUAL(expected_1, result_5);
+    ASSERT_EQUAL(expected_1, result_6);
+    ASSERT_EQUAL(expected_1, result_7);
+    ASSERT_EQUAL(expected_1, result_8);
+    ASSERT_EQUAL(expected_1, result_9);
 }
 
 CTEST(lexer, get_sample)

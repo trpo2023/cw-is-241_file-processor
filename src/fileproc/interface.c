@@ -477,7 +477,7 @@ void clean_data(Option* opt, GList** input_strings, GList** samples)
         *input_strings = NULL;
     }
     if (*samples != NULL) {
-        g_list_free_full(*samples, free_sample_parts);
+        g_list_free_full(*samples, free_Splitted_patterns);
         *samples = NULL;
     }
 }

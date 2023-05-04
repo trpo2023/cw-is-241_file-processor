@@ -6,6 +6,7 @@ enum MenuItems {
     SELECT_DIR,
     PROCESS,
     SELECT_OPT,
+    INFO,
     EXIT,
 };
 

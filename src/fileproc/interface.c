@@ -20,6 +20,7 @@ const char* options[] = {
         "Регистр", "Восстановить значения по умолчанию", "<-Вернуться в меню"};
 
 void clean_data(Option* opt, GList** input_strings, GList** patterns);
+void print_counter(WINDOW* sub, int x, int cnt, int max_cnt);
 
 void check_term_size(int x, int y)
 {
@@ -214,9 +215,7 @@ void print_new_page(
 {
     int x = getmaxx(sub);
     print_items(sub, list, cnt, a, b);
-    char counter[MAX_LEN] = {0};
-    sprintf(counter, "%d/%d", p + 1, max_p + 1);
-    mvwprintw(sub, 1, x - (strlen(counter) + 2), "%s", counter);
+    print_counter(sub, x, p + 1, max_p + 1);
 }
 
 // a -> y offset
@@ -235,9 +234,7 @@ char* get_item(
     GList* pages[max_pages];
 
     // page counter
-    char counter[MAX_LEN] = {0};
-    sprintf(counter, "%d/%ld", page + 1, max_pages + 1);
-    mvwprintw(sub, 1, x - (strlen(counter) + 2), "%s", counter);
+    print_counter(sub, x, page + 1, max_pages + 1);
 
     while ((ch = wgetch(sub)) != 10) { // 10 - KEY_ENTER
         mvwprintw(sub, i + b, 2, "%s", (char*)dir_list->data);
@@ -392,21 +389,6 @@ int print_input_strings(WINDOW* sub, GList* input_strings)
     return cnt;
 }
 
-int check_max_ninstr(WINDOW* sub, int cnt, int max_ninstr)
-{
-    if (cnt == max_ninstr) {
-        mvwprintw(sub, 1, 1, "Введено максимальное количество шаблонов!");
-        curs_set(0);
-        noecho();
-        wgetch(sub);
-
-        wclear(sub);
-        delwin(sub);
-        return -1;
-    }
-    return 0;
-}
-
 WINDOW* open_pattern_window(WINDOW* menu, int* x, int* y)
 {
     getmaxyx(menu, *y, *x);
@@ -422,13 +404,28 @@ void close_pattern_window(WINDOW* sub)
 {
     curs_set(0);
     noecho();
-    wclear(sub);
-    delwin(sub);
+    remove_current_window(sub);
 }
 
-void print_counter(WINDOW* sub, int x, int cnt, int max_ninstr)
+int check_max_ninstr(WINDOW* sub, int cnt, int max_ninstr)
 {
-    mvwprintw(sub, 1, x - 10, "%d/%d", cnt, max_ninstr);
+    if (cnt == max_ninstr) {
+        mvwprintw(sub, 1, 1, "Введено максимальное количество шаблонов!");
+        curs_set(0);
+        noecho();
+        wgetch(sub);
+
+        remove_current_window(sub);
+        return -1;
+    }
+    return 0;
+}
+
+void print_counter(WINDOW* sub, int x, int cnt, int max_cnt)
+{
+    char counter[MAX_LEN] = {0};
+    sprintf(counter, "%d/%d", cnt, max_cnt);
+    mvwprintw(sub, 1, x - (strlen(counter) + 2), "%s", counter);
 }
 
 int get_string(

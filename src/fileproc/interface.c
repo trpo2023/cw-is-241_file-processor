@@ -19,7 +19,8 @@ const char* menu_items[] = {
 const char* options[] = {
         "Регистр", "Восстановить значения по умолчанию", "<-Вернуться в меню"};
 
-void clean_data(Option* opt, GList** input_strings, GList** samples);
+void clean_data(Option* opt, GList** input_strings, GList** patterns);
+void print_counter(WINDOW* sub, int x, int cnt, int max_cnt);
 
 void check_term_size(int x, int y)
 {
@@ -214,9 +215,7 @@ void print_new_page(
 {
     int x = getmaxx(sub);
     print_items(sub, list, cnt, a, b);
-    char counter[MAX_LEN] = {0};
-    sprintf(counter, "%d/%d", p + 1, max_p + 1);
-    mvwprintw(sub, 1, x - (strlen(counter) + 2), "%s", counter);
+    print_counter(sub, x, p + 1, max_p + 1);
 }
 
 // a -> y offset
@@ -235,9 +234,7 @@ char* get_item(
     GList* pages[max_pages];
 
     // page counter
-    char counter[MAX_LEN] = {0};
-    sprintf(counter, "%d/%ld", page + 1, max_pages + 1);
-    mvwprintw(sub, 1, x - (strlen(counter) + 2), "%s", counter);
+    print_counter(sub, x, page + 1, max_pages + 1);
 
     while ((ch = wgetch(sub)) != 10) { // 10 - KEY_ENTER
         mvwprintw(sub, i + b, 2, "%s", (char*)dir_list->data);
@@ -392,100 +389,111 @@ int print_input_strings(WINDOW* sub, GList* input_strings)
     return cnt;
 }
 
-GList* pattern_input(WINDOW* menu, GList** input_strings, GList* samples)
+WINDOW* open_pattern_window(WINDOW* menu, int* x, int* y)
 {
-    int y, x;
-    getmaxyx(menu, y, x);
-    WINDOW* sub = init_sub_window(menu, y, x);
+    getmaxyx(menu, *y, *x);
+    WINDOW* sub = init_sub_window(menu, *y, *x);
     mvwprintw(sub, 1, 1, "Введите шаблон:");
-
-    getmaxyx(sub, y, x);
-
-    int max_ninstr = y - 3;
+    getmaxyx(sub, *y, *x);
     curs_set(1);
     echo();
-    int cnt = print_input_strings(sub, *input_strings);
+    return sub;
+}
 
-    mvwprintw(sub, 1, x - 10, "%d/%d", cnt, max_ninstr);
+void close_pattern_window(WINDOW* sub)
+{
+    curs_set(0);
+    noecho();
+    remove_current_window(sub);
+}
+
+int check_max_ninstr(WINDOW* sub, int cnt, int max_ninstr)
+{
     if (cnt == max_ninstr) {
         mvwprintw(sub, 1, 1, "Введено максимальное количество шаблонов!");
         curs_set(0);
         noecho();
         wgetch(sub);
 
-        wclear(sub);
-        delwin(sub);
-        return samples;
+        remove_current_window(sub);
+        return -1;
     }
-
-    char* str = malloc(x - 2);
-    mvwgetnstr(sub, cnt + 2, 2, str, x - 3);
-
-    int exit_code;
-    if (str[0] != '\0') {
-        samples = add_sample(samples, str, &exit_code);
-        if (exit_code == 0) {
-            *input_strings = g_list_append(*input_strings, str);
-            mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
-        } else {
-            free(str);
-            mvwprintw(sub, cnt + 2, 1, "╳");
-            mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
-        }
-    } else {
-        free(str);
-        curs_set(0);
-        noecho();
-
-        wclear(sub);
-        delwin(sub);
-
-        return samples;
-    }
-
-    for (int i = cnt; i < max_ninstr && str[0] != '\0'; i++) {
-        str = malloc(x - 3);
-        mvwgetnstr(sub, 2 + i, 2, str, x - 3);
-        if (str[0] == '\0') {
-            free(str);
-            break;
-        }
-        samples = add_sample(samples, str, &exit_code);
-        if (exit_code == 0) {
-            *input_strings = g_list_append(*input_strings, str);
-        } else {
-            mvwprintw(sub, cnt + 2, 1, "╳");
-            free(str);
-        }
-        mvwprintw(sub, 1, x - 10, "%d/%d", ++cnt, max_ninstr);
-    }
-
-    curs_set(0);
-    noecho();
-
-    wclear(sub);
-    delwin(sub);
-
-    return samples;
+    return 0;
 }
 
-void clean_data(Option* opt, GList** input_strings, GList** samples)
+void print_counter(WINDOW* sub, int x, int cnt, int max_cnt)
+{
+    char counter[MAX_LEN] = {0};
+    sprintf(counter, "%d/%d", cnt, max_cnt);
+    mvwprintw(sub, 1, x - (strlen(counter) + 2), "%s", counter);
+}
+
+int get_string(
+        WINDOW* sub,
+        int* cnt,
+        int max_ninstr,
+        int x,
+        char* str,
+        GList** patterns,
+        GList** input_strings)
+{
+    str = malloc(x - 2);
+    mvwgetnstr(sub, *cnt + 2, 2, str, x - 3);
+    if (str[0] == '\0') {
+        free(str);
+        return -1;
+    }
+    int exit_code;
+    *patterns = add_patterns(*patterns, str, &exit_code);
+    if (exit_code == 0) {
+        *input_strings = g_list_append(*input_strings, str);
+    } else {
+        mvwprintw(sub, *cnt + 2, 1, "╳");
+        free(str);
+    }
+    print_counter(sub, x, ++(*cnt), max_ninstr);
+    return 0;
+}
+
+GList* pattern_input(WINDOW* menu, GList** input_strings, GList* patterns)
+{
+    int y, x;
+    WINDOW* sub = open_pattern_window(menu, &x, &y);
+    int max_ninstr = y - 3;
+
+    int cnt = print_input_strings(sub, *input_strings);
+
+    print_counter(sub, x, cnt, max_ninstr);
+    if (check_max_ninstr(sub, cnt, max_ninstr))
+        return patterns;
+    char* str = NULL;
+
+    while (cnt < max_ninstr)
+        if (get_string(sub, &cnt, max_ninstr, x, str, &patterns, input_strings))
+            break;
+
+    close_pattern_window(sub);
+
+    return patterns;
+}
+
+void clean_data(Option* opt, GList** input_strings, GList** patterns)
 {
     opt->name_register = R_DEFAULT;
     if (*input_strings != NULL) {
         g_list_free_full(*input_strings, free);
         *input_strings = NULL;
     }
-    if (*samples != NULL) {
-        g_list_free_full(*samples, free_sample_parts);
-        *samples = NULL;
+    if (*patterns != NULL) {
+        g_list_free_full(*patterns, free_SplittedPattern);
+        *patterns = NULL;
     }
 }
 
 void start(WINDOW* menu)
 {
     GList* input_strings = NULL;
-    GList* samples = NULL;
+    GList* patterns = NULL;
     Option option = {0};
     char current_dir[MAX_LEN] = ".";
     int y = getmaxy(menu);
@@ -496,22 +504,23 @@ void start(WINDOW* menu)
         wrefresh(menu);
         switch (i) {
         case INPUT_PATTERN:
-            samples = pattern_input(menu, &input_strings, samples);
+            patterns = pattern_input(menu, &input_strings, patterns);
             break;
         case SELECT_DIR:
             select_dir(menu, current_dir);
             mvwprintw(menu, y - 2, 2, "Выбранный каталог: %-30s", current_dir);
             break;
         case PROCESS:
-            process(menu, samples, current_dir, &option);
-            clean_data(&option, &input_strings, &samples);
+            process(menu, patterns, current_dir, &option);
+            clean_data(&option, &input_strings, &patterns);
             break;
         case SELECT_OPT:
-            select_option(menu, &option, &input_strings, &samples, current_dir);
+            select_option(
+                    menu, &option, &input_strings, &patterns, current_dir);
             break;
         }
         mvwprintw_highlite(menu, i + 1, 2, menu_items[i]);
     }
 
-    clean_data(&option, &input_strings, &samples);
+    clean_data(&option, &input_strings, &patterns);
 }

@@ -2,232 +2,162 @@
 
 #include <libfileproc/lexer.h>
 
-char* skip_space(char* string) // пропуск пробелов
+char* skip_space(char* string)
 {
-    while (*string == ' ') {
+    while (*string == ' ')
         string++;
-    }
     return string;
 }
 
-char* skip_to_colon(char* string) // Пропуск всех символов до ':' или '\0'
+int check_wrong_symbols(char* input_string)
 {
-    while (1) {
-        if (*string == ':')
-            return string;
-        if (*string == '\0')
-            return string;
-        string++;
+    if (strpbrk(input_string, "/<>|«") != NULL)
+        return -1;
+    return 0;
+}
+
+int check_colon(char* input_string)
+{
+    if (*input_string == ':')
+        return -1;
+    input_string = strpbrk(input_string, ":");
+    if (input_string == NULL)
+        return -1;
+    input_string = strpbrk(input_string + 1, ":");
+    if (input_string != NULL)
+        return -1;
+    return 0;
+}
+
+int check_star(char** pattern)
+{
+    char* test_pattern = *pattern;
+    if (test_pattern[0] == '*') {
+        test_pattern++;
+        if (test_pattern[0] == '?')
+            return -1;
+        char* star = strpbrk(test_pattern, "*");
+        char* dot = strpbrk(test_pattern, ".");
+        if (star != NULL && dot != NULL)
+            if (star - dot < 0)
+                return -1;
     }
+    *pattern = test_pattern;
+    return 0;
 }
 
-int check_search_sample(char** string) // проверка шаблона для поиска
+int check_quest(char* pattern)
 {
-    bool star = false;
-    bool colon = false;
-    bool symbols = false;
-    int sample_len = 0;
+    if (pattern[0] == '?')
+        if (pattern[1] == '*')
+            return -1;
+    return 0;
+}
 
-    char* test_string = skip_space(*string);
-
-    while (1) {
-        if (sample_len > MAX_LEN)
-            return max_len_error;
-
-        if (*test_string == '/') {
-            return wrong_symbol_error;
-        }
-
-        if (*test_string == '\0')
-            break;
-
-        if (*test_string == '.')
-            star = false;
-
-        if (*test_string == ':') {
-            test_string++;
-            colon = true;
-            break;
-        }
-
-        if (*test_string == ' ') {
-            test_string = skip_space(test_string);
-            if (*test_string == ':') {
-                test_string++;
-                colon = true;
-                break;
-            }
-            test_string = skip_to_colon(test_string);
-            if (*test_string == ':') {
-                return search_sample_error;
-            }
-            break;
-        }
-
-        symbols = true;
-        if (*test_string == '*') {
-            if (star == true)
-                return more_than_one_star_error;
-            if (*(test_string + 1) == '?')
-                return star_quest_error;
-            star = true;
-        }
-        if (*test_string == '?') {
-            if (*(test_string + 1) == '*')
-                return star_quest_error;
-        }
-        test_string++;
-        sample_len++;
+int check_space(char* pattern)
+{
+    if (pattern[0] == ' ') {
+        pattern = skip_space(pattern);
+        if (pattern[0] != '\0')
+            return -1;
     }
-    if (!symbols)
-        return empty_search_sample_error;
-    if (!colon)
-        return colon_error;
-
-    *string = test_string;
-    return success;
+    return 0;
 }
 
-int check_rename_sample(char** string) // проверка шаблона для переименовывания
+int get_tokens(char** tokens, char* str, char* delim)
 {
-    bool star = false;
-    bool symbols = false;
-    int sample_len = 0;
+    tokens[0] = strtok(str, delim);
+    tokens[1] = strtok(NULL, delim);
+    if (tokens[1] == NULL)
+        return -1;
+    return 0;
+}
 
-    char* test_string = skip_space(*string);
-
-    while (1) {
-        if (sample_len > MAX_LEN)
-            return max_len_error;
-
-        if (*test_string == '/') {
-            return wrong_symbol_error;
-        }
-
-        if (*test_string == '\0')
-            break;
-
-        if (*test_string == '.')
-            star = false;
-
-        if (*test_string == ':') {
-            return colon_in_sample_error;
-        }
-
-        if (*test_string == ' ') {
-            test_string = skip_space(test_string);
-            if (*test_string == '\0') {
-                *string = test_string;
-                return success;
-            }
-            if (*test_string == ':')
-                return colon_in_sample_error;
-            return rename_sample_error;
-        }
-
-        symbols = true;
-        if (*test_string == '*') {
-            if (star == true)
-                return more_than_one_star_error;
-            if (*(test_string + 1) == '?')
-                return star_quest_error;
-            star = true;
-        }
-        if (*test_string == '?') {
-            if (*(test_string + 1) == '*')
-                return star_quest_error;
-        }
-        test_string++;
-        sample_len++;
+int check_pattern(char* pattern)
+{
+    pattern = skip_space(pattern);
+    if (*pattern == '\0')
+        return -1;
+    while (pattern[0] != '\0') {
+        if (check_star(&pattern))
+            return -1;
+        if (check_quest(pattern))
+            return -1;
+        if (check_space(pattern))
+            return -1;
+        pattern++;
     }
-    if (!symbols)
-        return empty_rename_sample_error;
-
-    *string = test_string;
-    return success;
+    return 0;
 }
 
-int check_sample_string(
-        char* input_string) // проверка полной строки с шаблонами
+int check_input_string(char* input_string)
 {
-    char* test_string = input_string;
-    int search_sample = check_search_sample(&test_string);
-    if (search_sample)
-        return search_sample;
-    int rename_sample = check_rename_sample(&test_string);
-    if (rename_sample)
-        return rename_sample;
-    return success;
+    if (check_wrong_symbols(input_string))
+        return -1;
+    if (check_colon(input_string))
+        return -1;
+    char* patterns[2];
+    char copy_string[MAX_LEN * 2];
+    strcpy(copy_string, input_string);
+    if (get_tokens(patterns, copy_string, ":"))
+        return -1;
+    if (check_pattern(patterns[0]))
+        return -1;
+    if (check_pattern(patterns[1]))
+        return -1;
+    return 0;
 }
 
-// Взятие отдельного паттерна из всей строки
-char* get_pattern(char* input_string, char** pattern)
+char* get_pattern(char* inp_str, char* pattern)
 {
-    char* buffer = *pattern;
-    while (1) {
-        if (*input_string == ' ')
-            break;
-        if (*input_string == ':')
-            break;
-        if (*input_string == '\0')
-            break;
-        *buffer = *input_string;
-        buffer++;
-        input_string++;
+    while (*inp_str != ' ' && *inp_str != ':' && *inp_str != '\0') {
+        *pattern = *inp_str;
+        pattern++;
+        inp_str++;
     }
-    *buffer = '\0';
-    return input_string;
+    *pattern = '\0';
+    return inp_str;
 }
 
-// Сдвинуть указатель к началу следующего паттерна
-char* to_rename_pattern(char* input_string)
+char* to_rename_pattern(char* inp_str)
 {
-    while (1) {
-        if (*input_string == ' ')
-            input_string++;
-        else if (*input_string == ':')
-            input_string++;
-        else
-            return input_string;
-    }
+    while (*inp_str == ' ' || *inp_str == ':')
+        inp_str++;
+    return inp_str;
 }
 
-// Разбить строку на паттерны
-sample_parts split_sample(char* input_string, sample_parts* patterns)
+void split_input_string(char* input_string, SplittedPattern* patterns)
 {
     input_string = skip_space(input_string);
-    input_string = get_pattern(input_string, &(patterns->search_pattern));
+    input_string = get_pattern(input_string, patterns->search_pattern);
     input_string = to_rename_pattern(input_string);
-    get_pattern(input_string, &(patterns->rename_pattern));
-    return *patterns;
+    get_pattern(input_string, patterns->rename_pattern);
 }
 
-// Разделить строку и записать в структуру
-int get_sample(char* input_string, sample_parts* patterns)
+int get_patterns(char* input_string, SplittedPattern* patterns)
 {
-    int check = check_sample_string(input_string);
-    if (check)
-        return check;
-    patterns->search_pattern = malloc(256);
-    patterns->rename_pattern = malloc(256);
-    *patterns = split_sample(input_string, patterns);
-    return success;
+    if (check_input_string(input_string))
+        return -1;
+    patterns->search_pattern = malloc(sizeof(char) * MAX_LEN);
+    patterns->rename_pattern = malloc(sizeof(char) * MAX_LEN);
+    split_input_string(input_string, patterns);
+    return 0;
 }
 
-GList* add_sample(GList* patterns, char* input_string, int* exit_code)
+GList* add_patterns(GList* patterns, char* input_string, int* exit_code)
 {
-    sample_parts* pattern = malloc(sizeof(sample_parts));
-    *exit_code = get_sample(input_string, pattern);
-    if (*exit_code == 0) {
+    SplittedPattern* pattern = malloc(sizeof(SplittedPattern));
+    *exit_code = get_patterns(input_string, pattern);
+    if (*exit_code == 0)
         patterns = g_list_append(patterns, pattern);
-    }
-
+    else
+        free(pattern);
     return patterns;
 }
 
-void free_sample_parts(void* patterns)
+void free_SplittedPattern(void* patterns)
 {
-    free(((sample_parts*)patterns)->search_pattern);
-    free(((sample_parts*)patterns)->rename_pattern);
-    free((sample_parts*)patterns);
+    free(((SplittedPattern*)patterns)->search_pattern);
+    free(((SplittedPattern*)patterns)->rename_pattern);
+    free((SplittedPattern*)patterns);
 }

@@ -485,7 +485,7 @@ void clean_data(Option* opt, GList** input_strings, GList** patterns)
         *input_strings = NULL;
     }
     if (*patterns != NULL) {
-        g_list_free_full(*patterns, free_Splitted_patterns);
+        g_list_free_full(*patterns, free_SplittedPattern);
         *patterns = NULL;
     }
 }

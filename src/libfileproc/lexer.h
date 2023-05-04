@@ -2,10 +2,10 @@
 
 #define MAX_LEN 256 // Максимальная длина пути или имени
 
-typedef struct Splitted_patterns {
+typedef struct SplittedPattern {
     char* search_pattern; // Шаблон для поиска
     char* rename_pattern; // Шаблон для переименовывания
-} Splitted_patterns;
+} SplittedPattern;
 
 // Принимает:   string - любая строка
 //
@@ -133,7 +133,7 @@ char* to_rename_pattern(char* inp_str);
 // Функция делит строку с шаблонами на два отдельных
 // шаблона без лишних пробелов и двоеточий и записывает
 // их в поля структуры
-void split_input_string(char* input_string, Splitted_patterns* patterns);
+void split_input_string(char* input_string, SplittedPattern* patterns);
 
 // Принимает:   input_string - строка с шаблонами
 //              patterns - указатель на структуру
@@ -146,7 +146,7 @@ void split_input_string(char* input_string, Splitted_patterns* patterns);
 //
 // Возвращает:  0, если входящая строка корректная
 //              -1, если в строке была ошибка
-int get_patterns(char* input_string, Splitted_patterns* patterns);
+int get_patterns(char* input_string, SplittedPattern* patterns);
 
 // Принимает:   patterns - указатель на список структур с шаблонами
 //              input_string - строка с шаблонами
@@ -164,4 +164,4 @@ GList* add_patterns(GList* patterns, char* input_string, int* exit_code);
 //
 // Функция освобождает память, выделенную под поля структуры
 // и под саму структуру
-void free_Splitted_patterns(void* patterns);
+void free_SplittedPattern(void* patterns);

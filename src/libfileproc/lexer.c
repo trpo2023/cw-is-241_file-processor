@@ -126,7 +126,7 @@ char* to_rename_pattern(char* inp_str)
     return inp_str;
 }
 
-void split_input_string(char* input_string, Splitted_patterns* patterns)
+void split_input_string(char* input_string, SplittedPattern* patterns)
 {
     input_string = skip_space(input_string);
     input_string = get_pattern(input_string, patterns->search_pattern);
@@ -134,7 +134,7 @@ void split_input_string(char* input_string, Splitted_patterns* patterns)
     get_pattern(input_string, patterns->rename_pattern);
 }
 
-int get_patterns(char* input_string, Splitted_patterns* patterns)
+int get_patterns(char* input_string, SplittedPattern* patterns)
 {
     if (check_input_string(input_string))
         return -1;
@@ -146,7 +146,7 @@ int get_patterns(char* input_string, Splitted_patterns* patterns)
 
 GList* add_patterns(GList* patterns, char* input_string, int* exit_code)
 {
-    Splitted_patterns* pattern = malloc(sizeof(Splitted_patterns));
+    SplittedPattern* pattern = malloc(sizeof(SplittedPattern));
     *exit_code = get_patterns(input_string, pattern);
     if (*exit_code == 0)
         patterns = g_list_append(patterns, pattern);
@@ -155,9 +155,9 @@ GList* add_patterns(GList* patterns, char* input_string, int* exit_code)
     return patterns;
 }
 
-void free_Splitted_patterns(void* patterns)
+void free_SplittedPattern(void* patterns)
 {
-    free(((Splitted_patterns*)patterns)->search_pattern);
-    free(((Splitted_patterns*)patterns)->rename_pattern);
-    free((Splitted_patterns*)patterns);
+    free(((SplittedPattern*)patterns)->search_pattern);
+    free(((SplittedPattern*)patterns)->rename_pattern);
+    free((SplittedPattern*)patterns);
 }

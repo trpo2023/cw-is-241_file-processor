@@ -196,7 +196,7 @@ CTEST(lexer, get_patterns)
     char sample[] = "*.txt:  *";
     char search_pattern[] = "*.txt";
     char rename_pattern[] = "*";
-    Splitted_patterns patterns[10];
+    SplittedPattern patterns[10];
     int returned = get_patterns(sample, &patterns[3]);
     int search_pattern_result
             = strcmp(search_pattern, patterns[3].search_pattern);
@@ -219,9 +219,9 @@ CTEST(directory, get_files_patterns_list)
     filesname = g_list_append(filesname, "test.h");
     filesname = g_list_append(filesname, "tost.txt");
 
-    Splitted_patterns* part1 = malloc(sizeof(Splitted_patterns));
-    Splitted_patterns* part2 = malloc(sizeof(Splitted_patterns));
-    Splitted_patterns* part3 = malloc(sizeof(Splitted_patterns));
+    SplittedPattern* part1 = malloc(sizeof(SplittedPattern));
+    SplittedPattern* part2 = malloc(sizeof(SplittedPattern));
+    SplittedPattern* part3 = malloc(sizeof(SplittedPattern));
     part1->rename_pattern = "*.jpg";
     part1->search_pattern = "*.txt";
     part2->rename_pattern = "*.pdf";

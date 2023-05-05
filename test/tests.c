@@ -163,6 +163,160 @@ CTEST(rename, get_correct_name_lower)
     ASSERT_STR(expect, dest);
 }
 
+CTEST(lexer, skip_space)
+{
+    char string_0[] = "    abc";
+    char string_1[] = "abc";
+    char* result_0 = skip_space(string_0);
+    char* result_1 = skip_space(string_1);
+    char expected[] = "abc";
+
+    ASSERT_STR(expected, result_0);
+    ASSERT_STR(expected, result_1);
+}
+
+CTEST(lexer, check_wrong_symbols)
+{
+    int result_0 = check_wrong_symbols("abc");
+    int result_1 = check_wrong_symbols("ab/c");
+    int result_2 = check_wrong_symbols("ab<c");
+    int result_3 = check_wrong_symbols("ab>c");
+    int result_4 = check_wrong_symbols("ab|c");
+    int result_5 = check_wrong_symbols("abc«");
+
+    int expected_0 = 0;
+    int expected_1 = -1;
+
+    ASSERT_EQUAL(expected_0, result_0);
+    ASSERT_EQUAL(expected_1, result_1);
+    ASSERT_EQUAL(expected_1, result_2);
+    ASSERT_EQUAL(expected_1, result_3);
+    ASSERT_EQUAL(expected_1, result_4);
+    ASSERT_EQUAL(expected_1, result_5);
+}
+
+CTEST(lexer, check_colon)
+{
+    int result_0 = check_colon("*.txt : *.doc");
+    int result_1 = check_colon(":*.txt");
+    int result_2 = check_colon("test.txt   *.txt");
+    int result_3 = check_colon("test.txt : *.txt : *");
+
+    int expected_0 = 0;
+    int expected_1 = -1;
+
+    ASSERT_EQUAL(expected_0, result_0);
+    ASSERT_EQUAL(expected_1, result_1);
+    ASSERT_EQUAL(expected_1, result_2);
+    ASSERT_EQUAL(expected_1, result_3);
+}
+
+CTEST(lexer, check_star)
+{
+    char string_0[] = "*.txt";
+    char string_1[] = "*.*";
+    char string_2[] = "txt.*";
+    char string_3[] = "*abc?.txt";
+    char string_4[] = "**.txt";
+    char string_5[] = "*?.txt";
+
+    char* test_string;
+
+    test_string = string_0;
+    int result_0 = check_star(&test_string);
+    test_string = string_1;
+    int result_1 = check_star(&test_string);
+    test_string = string_2;
+    int result_2 = check_star(&test_string);
+    test_string = string_3;
+    int result_3 = check_star(&test_string);
+    test_string = string_4;
+    int result_4 = check_star(&test_string);
+    test_string = string_5;
+    int result_5 = check_star(&test_string);
+
+    int expected_0 = 0;
+    int expected_1 = -1;
+
+    ASSERT_EQUAL(expected_0, result_0);
+    ASSERT_EQUAL(expected_0, result_1);
+    ASSERT_EQUAL(expected_0, result_2);
+    ASSERT_EQUAL(expected_0, result_3);
+    ASSERT_EQUAL(expected_1, result_4);
+    ASSERT_EQUAL(expected_1, result_5);
+}
+
+CTEST(lexer, check_quest)
+{
+    int result_0 = check_quest("?abc*.txt");
+    int result_1 = check_quest("?*abc.txt");
+
+    int expected_0 = 0;
+    int expected_1 = -1;
+
+    ASSERT_EQUAL(expected_0, result_0);
+    ASSERT_EQUAL(expected_1, result_1);
+}
+
+CTEST(lexer, check_space)
+{
+    int result_0 = check_space("   ");
+    int result_1 = check_space("   bcd");
+
+    int expected_0 = 0;
+    int expected_1 = -1;
+
+    ASSERT_EQUAL(expected_0, result_0);
+    ASSERT_EQUAL(expected_1, result_1);
+}
+
+CTEST(lexer, get_tokens)
+{
+    char input_string_0[] = "*.txt : abc.txt";
+    char input_string_1[] = ": abc.txt";
+    char input_string_2[] = "*.txt :";
+    char input_string_3[] = "";
+
+    char* tokens[2];
+
+    int result_1 = get_tokens(tokens, input_string_1, ":");
+    int result_2 = get_tokens(tokens, input_string_2, ":");
+    int result_3 = get_tokens(tokens, input_string_3, ":");
+    int result_0 = get_tokens(tokens, input_string_0, ":");
+
+    int expected_0 = 0;
+    int expected_1 = -1;
+
+    ASSERT_EQUAL(expected_0, result_0);
+    ASSERT_EQUAL(expected_1, result_1);
+    ASSERT_EQUAL(expected_1, result_2);
+    ASSERT_EQUAL(expected_1, result_3);
+
+    char expected_token_0[] = "*.txt ";
+    char expected_token_1[] = " abc.txt";
+
+    ASSERT_STR(expected_token_0, tokens[0]);
+    ASSERT_STR(expected_token_1, tokens[1]);
+}
+
+CTEST(lexer, check_pattern)
+{
+    int result_0 = check_pattern("*.txt");
+    int result_1 = check_pattern("**.txt");
+    int result_2 = check_pattern("?*test.txt");
+    int result_3 = check_pattern("test.txt   *.txt");
+    int result_4 = check_pattern("*/.txt:  *");
+
+    int expected_0 = 0;
+    int expected_1 = -1;
+
+    ASSERT_EQUAL(expected_0, result_0);
+    ASSERT_EQUAL(expected_1, result_1);
+    ASSERT_EQUAL(expected_1, result_2);
+    ASSERT_EQUAL(expected_1, result_3);
+    ASSERT_EQUAL(expected_1, result_4);
+}
+
 CTEST(lexer, check_input_string)
 {
     int result_0 = check_input_string("*.txt:  *");
@@ -191,21 +345,124 @@ CTEST(lexer, check_input_string)
     ASSERT_EQUAL(expected_1, result_9);
 }
 
+CTEST(lexer, get_pattern)
+{
+    char inp_str_0[] = "*.txt : a.txt";
+    char inp_str_1[] = "*.txt:a.txt";
+    char inp_str_2[] = "*.txt   ";
+
+    char* pattern_0 = malloc(sizeof(char) * 10);
+    char* pattern_1 = malloc(sizeof(char) * 10);
+    char* pattern_2 = malloc(sizeof(char) * 10);
+
+    char* test_inp_str_0 = get_pattern(inp_str_0, pattern_0);
+    char* test_inp_str_1 = get_pattern(inp_str_1, pattern_1);
+    char* test_inp_str_2 = get_pattern(inp_str_2, pattern_2);
+
+    char expected_pattern[] = "*.txt";
+
+    char expected_inp_str_0[] = " : a.txt";
+    char expected_inp_str_1[] = ":a.txt";
+    char expected_inp_str_2[] = "   ";
+
+    ASSERT_STR(expected_inp_str_0, test_inp_str_0);
+    ASSERT_STR(expected_inp_str_1, test_inp_str_1);
+    ASSERT_STR(expected_inp_str_2, test_inp_str_2);
+
+    ASSERT_STR(expected_pattern, pattern_0);
+    ASSERT_STR(expected_pattern, pattern_1);
+    ASSERT_STR(expected_pattern, pattern_2);
+
+    free(pattern_0);
+    free(pattern_1);
+    free(pattern_2);
+}
+
+CTEST(lexer, to_rename_pattern)
+{
+    char inp_str_0[] = " : a.txt";
+    char inp_str_1[] = ":a.txt";
+
+    char* test_inp_str_0 = to_rename_pattern(inp_str_0);
+    char* test_inp_str_1 = to_rename_pattern(inp_str_1);
+
+    char expected_inp_str[] = "a.txt";
+
+    ASSERT_STR(expected_inp_str, test_inp_str_0);
+    ASSERT_STR(expected_inp_str, test_inp_str_1);
+}
+
+CTEST(lexer, split_input_string)
+{
+    char input_string_0[] = "*.txt : a.txt";
+    char input_string_1[] = "*.txt:a.txt";
+
+    SplittedPattern* patterns_0 = malloc(sizeof(SplittedPattern));
+    SplittedPattern* patterns_1 = malloc(sizeof(SplittedPattern));
+
+    patterns_0->search_pattern = malloc(sizeof(char) * MAX_LEN);
+    patterns_0->rename_pattern = malloc(sizeof(char) * MAX_LEN);
+    patterns_1->search_pattern = malloc(sizeof(char) * MAX_LEN);
+    patterns_1->rename_pattern = malloc(sizeof(char) * MAX_LEN);
+
+    split_input_string(input_string_0, patterns_0);
+    split_input_string(input_string_1, patterns_1);
+
+    char expected_search_pattern[] = "*.txt";
+    char expected_rename_pattern[] = "a.txt";
+
+    ASSERT_STR(expected_search_pattern, patterns_0->search_pattern);
+    ASSERT_STR(expected_rename_pattern, patterns_0->rename_pattern);
+    ASSERT_STR(expected_search_pattern, patterns_1->search_pattern);
+    ASSERT_STR(expected_rename_pattern, patterns_1->rename_pattern);
+
+    free_SplittedPattern(patterns_0);
+    free_SplittedPattern(patterns_1);
+}
+
 CTEST(lexer, get_patterns)
 {
-    char sample[] = "*.txt:  *";
-    char search_pattern[] = "*.txt";
-    char rename_pattern[] = "*";
-    SplittedPattern patterns[10];
-    int returned = get_patterns(sample, &patterns[3]);
-    int search_pattern_result
-            = strcmp(search_pattern, patterns[3].search_pattern);
-    int rename_pattern_result
-            = strcmp(rename_pattern, patterns[3].rename_pattern);
-    int expected = 0;
-    ASSERT_EQUAL(expected, returned);
-    ASSERT_EQUAL(expected, search_pattern_result);
-    ASSERT_EQUAL(expected, rename_pattern_result);
+    char input_string_0[] = "*.txt : a.txt";
+    char input_string_1[] = "*.txt  a.txt";
+
+    SplittedPattern* patterns = malloc(sizeof(SplittedPattern));
+
+    int result_0 = get_patterns(input_string_0, patterns);
+    int result_1 = get_patterns(input_string_1, patterns);
+
+    char expected_search_pattern[] = "*.txt";
+    char expected_rename_pattern[] = "a.txt";
+
+    int expected_0 = 0;
+    int expected_1 = -1;
+
+    ASSERT_EQUAL(expected_0, result_0);
+    ASSERT_EQUAL(expected_1, result_1);
+
+    ASSERT_STR(expected_search_pattern, patterns->search_pattern);
+    ASSERT_STR(expected_rename_pattern, patterns->rename_pattern);
+
+    free_SplittedPattern(patterns);
+}
+
+CTEST(lexer, add_patterns)
+{
+    char input_string[] = "*.txt:a.txt";
+    int exit_code;
+    GList* patterns = NULL;
+    patterns = add_patterns(patterns, input_string, &exit_code);
+
+    char expected_search_pattern[] = "*.txt";
+    char expected_rename_pattern[] = "a.txt";
+
+    ASSERT_STR(
+            expected_search_pattern,
+            ((SplittedPattern*)patterns->data)->search_pattern);
+    ASSERT_STR(
+            expected_rename_pattern,
+            ((SplittedPattern*)patterns->data)->rename_pattern);
+
+    g_list_free_full(patterns, free_SplittedPattern);
 }
 
 CTEST(directory, get_files_patterns_list)

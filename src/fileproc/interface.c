@@ -194,13 +194,13 @@ void print_items(WINDOW* sub, GList* list, int* str_cnt, int a, int b)
     int x = getmaxx(sub) - a;
     int cnt = 0;
     for (GList* i = list; i != NULL && cnt < y; i = i->next) {
-        mvwprintw(sub, cnt + b, 2, "%-*s", x - 1, (char*)i->data);
+        mvwprintw(sub, cnt + b, 2, "%-*s", x, (char*)i->data);
         cnt++;
     }
     *str_cnt = cnt;
 
     while (cnt < y) {
-        mvwprintw(sub, cnt + b, 2, "%-*s", x - 1, " ");
+        mvwprintw(sub, cnt + b, 2, "%-*s", x, " ");
         cnt++;
     }
 
@@ -504,37 +504,65 @@ char* s_gets(char* dest, size_t n, FILE* stream)
     return dest;
 }
 
-void show_info(WINDOW* menu)
+WINDOW* open_info_window(WINDOW* menu, int* y, int* x)
 {
-    int y, x;
-    getmaxyx(menu, y, x);
-    WINDOW* sub = init_sub_window(menu, y, x);
-    x = getmaxx(sub);
+    getmaxyx(menu, *y, *x);
+    WINDOW* sub = init_sub_window(menu, *y, *x);
+    *x = getmaxx(sub);
     mvwprintw(sub, 1, 1, "Информация:");
-    FILE* file = fopen("txt/instruction.txt", "r");
-	if (file == NULL) {
-		mvwprintw(sub, 2, 1, "Не удалось связаться с базой.");
-		mvwprintw(sub, 3, 1, "Извини, попробуй в следующий раз");
-		wrefresh(sub);
-		wgetch(sub);		
-		remove_current_window(sub);
-		return; 
-	}
+    return sub;
+}
 
+int null_file(WINDOW* sub, FILE* file)
+{
+    if (file == NULL) {
+        mvwprintw(sub, 2, 1, "Не удалось связаться с базой.");
+        mvwprintw(sub, 3, 1, "Извини, попробуй в следующий раз");
+        wrefresh(sub);
+        wgetch(sub);
+        remove_current_window(sub);
+        return -1;
+    }
+    return 0;
+}
+
+GList* read_file(WINDOW* sub, int x, char* path)
+{
+    FILE* file = fopen(path, "r");
+    if (null_file(sub, file))
+        return NULL;
     GList* str_list = NULL;
     char* str = malloc(2 * x);
     while (s_gets(str, x * 2, file) != NULL) {
         str_list = g_list_append(str_list, str);
         str = malloc(2 * x);
     }
+    free(str);
+    fclose(file);
+    return str_list;
+}
 
+void print_info(WINDOW* sub, GList* str_list, int y)
+{
     size_t size = g_list_length(str_list);
     int cnt = 0;
-
     print_items(sub, str_list, &cnt, 3, 2);
     mvwprintw_highlite(sub, 2, 2, (char*)str_list->data);
     get_item(sub, str_list, y - 5, size, cnt, 3, 2);
+}
 
+void show_info(WINDOW* menu)
+{
+    int y, x;
+    WINDOW* sub = open_info_window(menu, &y, &x);
+
+    GList* str_list = read_file(sub, x, "txt/instruction.txt");
+    if (str_list == NULL)
+        return;
+
+    print_info(sub, str_list, y);
+
+    g_list_free_full(str_list, free);
     remove_current_window(sub);
 }
 

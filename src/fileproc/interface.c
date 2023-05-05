@@ -516,7 +516,8 @@ WINDOW* open_info_window(WINDOW* menu, int* y, int* x)
 int null_file(WINDOW* sub, FILE* file)
 {
     if (file == NULL) {
-        mvwprintw(sub, 2, 1, "Не удалось открыть документ");
+        mvwprintw(sub, 2, 1, "Не удалось открыть файл instruction.txt.");
+        mvwprintw(sub, 3, 1, "Вывести информацию невозможно.");
         wrefresh(sub);
         wgetch(sub);
         remove_current_window(sub);
@@ -555,7 +556,7 @@ void show_info(WINDOW* menu)
     int y, x;
     WINDOW* sub = open_info_window(menu, &y, &x);
 
-    GList* str_list = read_file(sub, x, "txt/instruction.txt");
+    GList* str_list = read_file(sub, x, "instruction.txt");
     if (str_list == NULL)
         return;
 

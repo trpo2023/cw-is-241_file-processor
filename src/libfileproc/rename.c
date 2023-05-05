@@ -210,19 +210,19 @@ char* write_correct_renamed_string(int x, char* old_name, char* new_name)
     size_t old_len = strlen(old_name);
     size_t new_len = strlen(new_name);
     char* string = malloc(sizeof(char) * (x - 1));
-    if (old_len + new_len + 4 < x - 3) {
+    if (old_len + new_len + 5 < x - 3) {
         sprintf(string,
                 "%-*s -> %*s",
                 (x / 2) - 4,
                 old_name,
-                (x / 2) - 4,
+                (x / 2) - 5,
                 new_name);
     } else {
         char old[MAX_LEN] = {0};
         char new[MAX_LEN] = {0};
         make_str_smallest(old_name, old, old_len, (x / 2) - 4);
-        make_str_smallest(new_name, new, new_len, (x / 2) - 4);
-        sprintf(string, "%-*s -> %*s", (x / 2) - 4, old, (x / 2) - 4, new);
+        make_str_smallest(new_name, new, new_len, (x / 2) - 5);
+        sprintf(string, "%-*s -> %*s", (x / 2) - 4, old, (x / 2) - 5, new);
     }
 
     return string;

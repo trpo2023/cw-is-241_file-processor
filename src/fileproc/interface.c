@@ -13,7 +13,8 @@ const char* menu_items[] = {
         "2) Выбрать каталог",
         "3) Запустить массовое переименование",
         "4) Опции",
-        "5) Выход из приложения (F10)",
+        "5) Информация",
+        "6) Выход из приложения (F10)",
 };
 
 const char* options[] = {
@@ -57,7 +58,7 @@ WINDOW* init_menu()
 
     mvwprintw_highlite(win, 1, 2, menu_items[0]);
 
-    for (int i = 1; i < 5; i++) {
+    for (int i = 1; i < 6; i++) {
         mvwprintw(win, i + 1, 2, "%s", menu_items[i]);
     }
 
@@ -199,7 +200,7 @@ void print_items(WINDOW* sub, GList* list, int* str_cnt, int a, int b)
     *str_cnt = cnt;
 
     while (cnt < y) {
-        mvwprintw(sub, cnt + b, 2, "%-*s", x + 1, " ");
+        mvwprintw(sub, cnt + b, 2, "%-*s", x, " ");
         cnt++;
     }
 
@@ -490,6 +491,81 @@ void clean_data(Option* opt, GList** input_strings, GList** patterns)
     }
 }
 
+char* s_gets(char* dest, size_t n, FILE* stream)
+{
+    if (fgets(dest, n, stream) == NULL)
+        return NULL;
+    for (int i = 0; dest[i] != '\0'; i++) {
+        if (dest[i] == '\n') {
+            dest[i] = '\0';
+            break;
+        }
+    }
+    return dest;
+}
+
+WINDOW* open_info_window(WINDOW* menu, int* y, int* x)
+{
+    getmaxyx(menu, *y, *x);
+    WINDOW* sub = init_sub_window(menu, *y, *x);
+    *x = getmaxx(sub);
+    mvwprintw(sub, 1, 1, "Информация:");
+    return sub;
+}
+
+int null_file(WINDOW* sub, FILE* file)
+{
+    if (file == NULL) {
+        mvwprintw(sub, 2, 1, "Не удалось открыть файл instruction.txt.");
+        mvwprintw(sub, 3, 1, "Вывести информацию невозможно.");
+        wrefresh(sub);
+        wgetch(sub);
+        remove_current_window(sub);
+        return -1;
+    }
+    return 0;
+}
+
+GList* read_file(WINDOW* sub, int x, char* path)
+{
+    FILE* file = fopen(path, "r");
+    if (null_file(sub, file))
+        return NULL;
+    GList* str_list = NULL;
+    char* str = malloc(2 * x);
+    while (s_gets(str, x * 2, file) != NULL) {
+        str_list = g_list_append(str_list, str);
+        str = malloc(2 * x);
+    }
+    free(str);
+    fclose(file);
+    return str_list;
+}
+
+void print_info(WINDOW* sub, GList* str_list, int y)
+{
+    size_t size = g_list_length(str_list);
+    int cnt = 0;
+    print_items(sub, str_list, &cnt, 3, 2);
+    mvwprintw_highlite(sub, 2, 2, (char*)str_list->data);
+    get_item(sub, str_list, y - 5, size, cnt, 3, 2);
+}
+
+void show_info(WINDOW* menu)
+{
+    int y, x;
+    WINDOW* sub = open_info_window(menu, &y, &x);
+
+    GList* str_list = read_file(sub, x, "instruction.txt");
+    if (str_list == NULL)
+        return;
+
+    print_info(sub, str_list, y);
+
+    g_list_free_full(str_list, free);
+    remove_current_window(sub);
+}
+
 void start(WINDOW* menu)
 {
     GList* input_strings = NULL;
@@ -499,7 +575,7 @@ void start(WINDOW* menu)
     int y = getmaxy(menu);
     int i = INPUT_PATTERN;
 
-    while ((i = select_items(menu, menu_items, i, 1, 4)) != EXIT
+    while ((i = select_items(menu, menu_items, i, 1, 5)) != EXIT
            && i != KEY_F(10)) {
         wrefresh(menu);
         switch (i) {
@@ -517,6 +593,9 @@ void start(WINDOW* menu)
         case SELECT_OPT:
             select_option(
                     menu, &option, &input_strings, &patterns, current_dir);
+            break;
+        case INFO:
+            show_info(menu);
             break;
         }
         mvwprintw_highlite(menu, i + 1, 2, menu_items[i]);

@@ -516,8 +516,7 @@ WINDOW* open_info_window(WINDOW* menu, int* y, int* x)
 int null_file(WINDOW* sub, FILE* file)
 {
     if (file == NULL) {
-        mvwprintw(sub, 2, 1, "Не удалось связаться с базой.");
-        mvwprintw(sub, 3, 1, "Извини, попробуй в следующий раз");
+        mvwprintw(sub, 2, 1, "Не удалось открыть документ");
         wrefresh(sub);
         wgetch(sub);
         remove_current_window(sub);

@@ -194,13 +194,13 @@ void print_items(WINDOW* sub, GList* list, int* str_cnt, int a, int b)
     int x = getmaxx(sub) - a;
     int cnt = 0;
     for (GList* i = list; i != NULL && cnt < y; i = i->next) {
-        mvwprintw(sub, cnt + b, 2, "%-*s", x, (char*)i->data);
+        mvwprintw(sub, cnt + b, 2, "%-*s", x - 1, (char*)i->data);
         cnt++;
     }
     *str_cnt = cnt;
 
     while (cnt < y) {
-        mvwprintw(sub, cnt + b, 2, "%-*s", x + 1, " ");
+        mvwprintw(sub, cnt + b, 2, "%-*s", x - 1, " ");
         cnt++;
     }
 
@@ -511,20 +511,28 @@ void show_info(WINDOW* menu)
     WINDOW* sub = init_sub_window(menu, y, x);
     x = getmaxx(sub);
     mvwprintw(sub, 1, 1, "Информация:");
-    FILE* file = fopen("./txt/instruction.txt", "r");
+    FILE* file = fopen("txt/instruction.txt", "r");
+	if (file == NULL) {
+		mvwprintw(sub, 2, 1, "Не удалось связаться с базой.");
+		mvwprintw(sub, 3, 1, "Извини, попробуй в следующий раз");
+		wrefresh(sub);
+		wgetch(sub);		
+		remove_current_window(sub);
+		return; 
+	}
 
     GList* str_list = NULL;
-    char* str = malloc(sizeof(char) * 2 * x);
+    char* str = malloc(2 * x);
     while (s_gets(str, x * 2, file) != NULL) {
         str_list = g_list_append(str_list, str);
-        str = malloc(sizeof(char) * 2 * x);
+        str = malloc(2 * x);
     }
 
     size_t size = g_list_length(str_list);
     int cnt = 0;
 
     print_items(sub, str_list, &cnt, 3, 2);
-    // mvwprintw_highlite(sub, 2, 2, (char*)str_list->data);
+    mvwprintw_highlite(sub, 2, 2, (char*)str_list->data);
     get_item(sub, str_list, y - 5, size, cnt, 3, 2);
 
     remove_current_window(sub);

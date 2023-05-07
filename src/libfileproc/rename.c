@@ -185,7 +185,7 @@ void get_new_name(char* name, char* pattern, char* dest)
     }
 }
 
-void make_str_smallest(char* str, char* dest, size_t len, size_t max_len)
+void make_str_smaller(char* str, char* dest, size_t len, size_t max_len)
 {
     int i = 0, j = 0;
     int stop1 = max_len / 2;
@@ -209,20 +209,20 @@ char* write_correct_renamed_string(int x, char* old_name, char* new_name)
 {
     size_t old_len = strlen(old_name);
     size_t new_len = strlen(new_name);
-    char* string = malloc(sizeof(char) * (x - 1));
-    if (old_len + new_len + 5 < x - 3) {
+    char* string = malloc(sizeof(char) * (x + 4));
+    if (old_len + new_len < x) {
         sprintf(string,
                 "%-*s -> %*s",
-                (x / 2) - 4,
+                (x / 2) - 1,
                 old_name,
-                (x / 2) - 5,
+                (x / 2) - 1,
                 new_name);
     } else {
         char old[MAX_LEN] = {0};
         char new[MAX_LEN] = {0};
-        make_str_smallest(old_name, old, old_len, (x / 2) - 4);
-        make_str_smallest(new_name, new, new_len, (x / 2) - 5);
-        sprintf(string, "%-*s -> %*s", (x / 2) - 4, old, (x / 2) - 5, new);
+        make_str_smaller(old_name, old, old_len, (x / 2) - 1);
+        make_str_smaller(new_name, new, new_len, (x / 2) - 1);
+        sprintf(string, "%-*s -> %*s", (x / 2) - 1, old, (x / 2) - 1, new);
     }
 
     return string;

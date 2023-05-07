@@ -163,6 +163,44 @@ CTEST(rename, get_correct_name_lower)
     ASSERT_STR(expect, dest);
 }
 
+CTEST(rename, make_str_smaller)
+{
+    char str[] = "docs/need_make_this_string_smaller.txt";
+    char result[100];
+    int needed_len = 20;
+    char expect[] = "docs/need_...ler.txt";
+    make_str_smaller(str, result, strlen(str), needed_len);
+
+    ASSERT_STR(expect, result);
+}
+
+CTEST(rename, write_correct_renamed_string)
+{
+    char* old_name = "filename.txt";
+    char* new_name = "nemname.txt";
+    int string_len = 30;
+    char* expect = "filename.txt   ->    nemname.txt";
+    char* result = write_correct_renamed_string(string_len, old_name, new_name);
+    ASSERT_STR(expect, result);
+    free(result);
+
+    old_name = "bigefllenamewowowowoowwow.txt";
+    new_name = "bigefllenamewowowowoowwow.jpg";
+    string_len = 50;
+    expect = "bigefllename...owwow.txt -> bigefllename...owwow.jpg";
+    result = write_correct_renamed_string(string_len, old_name, new_name);
+    ASSERT_STR(expect, result);
+    free(result);
+
+    old_name = "docs/filenameeeeeee.txt";
+    new_name = "docs/nemenwnewnameeeeee.txt";
+    string_len = 40;
+    expect = "docs/file...ee.txt  ->  docs/neme...ee.txt";
+    result = write_correct_renamed_string(string_len, old_name, new_name);
+    ASSERT_STR(expect, result);
+    free(result);
+}
+
 CTEST(lexer, skip_space)
 {
     char string_0[] = "    abc";

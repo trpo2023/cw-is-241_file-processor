@@ -199,8 +199,9 @@ void print_items(WINDOW* sub, GList* list, int* str_cnt, int a, int b)
     }
     *str_cnt = cnt;
 
+    x = getmaxx(sub);
     while (cnt < y) {
-        mvwprintw(sub, cnt + b, 2, "%-*s", x, " ");
+        mvwprintw(sub, cnt + b, 2, "%-*s", x - 3, " ");
         cnt++;
     }
 
@@ -305,7 +306,7 @@ GList* get_renamed_list(WINDOW* sub, GList* renamed_files)
     for (GList* i = renamed_files; i != NULL; i = i->next) {
         char* old_name = ((RenamedFile*)i->data)->old_path;
         char* new_name = ((RenamedFile*)i->data)->new_path;
-        char* str = write_correct_renamed_string(x, old_name, new_name);
+        char* str = write_correct_renamed_string(x - 5, old_name, new_name);
         str_list = g_list_append(str_list, str);
     }
 

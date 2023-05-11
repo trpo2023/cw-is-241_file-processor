@@ -1,5 +1,6 @@
 #include <glib.h>
 
+#include <libfileproc/clean_memory.h>
 #include <libfileproc/lexer.h>
 
 char* skip_space(char* string)
@@ -153,11 +154,4 @@ GList* add_patterns(GList* patterns, char* input_string, int* exit_code)
     else
         free(pattern);
     return patterns;
-}
-
-void free_SplittedPattern(void* patterns)
-{
-    free(((SplittedPattern*)patterns)->search_pattern);
-    free(((SplittedPattern*)patterns)->rename_pattern);
-    free((SplittedPattern*)patterns);
 }

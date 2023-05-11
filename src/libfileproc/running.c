@@ -1,12 +1,6 @@
+#include <libfileproc/clean_memory.h>
 #include <libfileproc/directory.h>
-
 #include <libfileproc/rename.h>
-
-void clean_memory(GList* files_patterns_list, GList* files_list)
-{
-    g_list_free_full(files_patterns_list, free);
-    g_list_free_full(files_list, free);
-}
 
 GList* rename_and_get_renamed_list(GList* sample, char* dir_path, Option* opt)
 {

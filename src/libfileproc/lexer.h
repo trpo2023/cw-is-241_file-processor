@@ -159,9 +159,3 @@ int get_patterns(char* input_string, SplittedPattern* patterns);
 //
 // Возвращает:  указатель на список patterns
 GList* add_patterns(GList* patterns, char* input_string, int* exit_code);
-
-// Принимает:   patterns - указатель на структуру с шаблонами
-//
-// Функция освобождает память, выделенную под поля структуры
-// и под саму структуру
-void free_SplittedPattern(void* patterns);

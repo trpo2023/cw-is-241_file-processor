@@ -4,6 +4,7 @@
 
 #include "interface.h"
 #include <libfileproc/directory.h>
+#include <libfileproc/clean_memory.h>
 #include <libfileproc/lexer.h>
 #include <libfileproc/rename.h>
 #include <libfileproc/running.h>
@@ -20,7 +21,6 @@ const char* menu_items[] = {
 const char* options[] = {
         "Регистр", "Восстановить значения по умолчанию", "<-Вернуться в меню"};
 
-void clean_data(Option* opt, GList** input_strings, GList** patterns);
 void print_counter(WINDOW* sub, int x, int cnt, int max_cnt);
 
 void check_term_size(int x, int y)
@@ -179,13 +179,6 @@ void select_option(
     remove_current_window(sub);
 }
 
-void free_renamed_files(void* data)
-{
-    free(((RenamedFile*)data)->old_path);
-    free(((RenamedFile*)data)->new_path);
-    free(data);
-}
-
 // a -> y offset
 // b -> x offset
 void print_items(WINDOW* sub, GList* list, int* str_cnt, int a, int b)
@@ -329,11 +322,7 @@ void print_renamed_list(WINDOW* sub, GList* renamed_list, int x, int y)
     get_item(sub, renamed_list, y - 5, size, str_cnt, 5, 4);
 }
 
-void free_renamed_list(GList* renamed_file_list, GList* list)
-{
-    g_list_free_full(list, free);
-    g_list_free_full(renamed_file_list, free_renamed_files);
-}
+
 
 void get_and_print_renamed_list(
         WINDOW* sub, GList* renamed_file_list, int x, int y)
@@ -477,19 +466,6 @@ GList* pattern_input(WINDOW* menu, GList** input_strings, GList* patterns)
     close_pattern_window(sub);
 
     return patterns;
-}
-
-void clean_data(Option* opt, GList** input_strings, GList** patterns)
-{
-    opt->name_register = R_DEFAULT;
-    if (*input_strings != NULL) {
-        g_list_free_full(*input_strings, free);
-        *input_strings = NULL;
-    }
-    if (*patterns != NULL) {
-        g_list_free_full(*patterns, free_SplittedPattern);
-        *patterns = NULL;
-    }
 }
 
 char* s_gets(char* dest, size_t n, FILE* stream)

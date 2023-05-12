@@ -2,6 +2,7 @@
 #include <glib.h>
 #include <stdio.h>
 
+#include <libfileproc/clean_memory.h>
 #include <libfileproc/directory.h>
 #include <libfileproc/lexer.h>
 #include <libfileproc/rename.h>

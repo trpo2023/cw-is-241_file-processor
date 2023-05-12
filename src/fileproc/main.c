@@ -1,6 +1,7 @@
 #include <locale.h>
 
-#include <fileproc/interface.h>
+#include <interface/init.h>
+#include <interface/start.h>
 
 int main()
 {

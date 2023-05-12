@@ -32,7 +32,8 @@ void clean_memory(GList* files_patterns_list, GList* files_list);
 // Очищает поля структуры data, а после и память выделенную под структуру
 void free_renamed_files(void* data);
 
-// Принимает: renamed_file_list - указатель на список файлов готовых к переименованию
+// Принимает: renamed_file_list - указатель на список файлов готовых к
+// переименованию
 //            list - указатель на список переименнованых файлов
 //
 // Очищает память, выделенную на renamed_file_list и на list

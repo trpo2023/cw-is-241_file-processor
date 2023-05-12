@@ -23,8 +23,10 @@ APP_SOURCES = $(wildcard $(SRC_DIR)/$(APP_NAME)/*.c)
 APP_OBJECTS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(APP_SOURCES))
 
 LIB_SOURCES =  $(wildcard $(SRC_DIR)/$(LIB_NAME)/*.c)
+LIB_OBJECTS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(LIB_SOURCES)) 
+
 INTERFACE_SOURCES = $(wildcard $(SRC_DIR)/$(INTERFACE_NAME)/*.c)
-LIB_OBJECTS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(LIB_SOURCES)) $(patsubst %.c, $(OBJ_DIR)/%.o, $(INTERFACE_SOURCES))
+INTERFACE_OBJECTS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(INTERFACE_SOURCES))
 
 TEST_SOURCES = $(wildcard $(TEST_DIR)/*.c)
 TEST_OBJECTS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(TEST_SOURCES))
@@ -37,18 +39,20 @@ all: $(APP_PATH)
 -include $(DEPS)
 
 # BUILD
-$(APP_PATH): $(APP_OBJECTS) $(LIB_PATH) $(INTERFACE_PATH)
+$(APP_PATH): $(APP_OBJECTS) $(INTERFACE_PATH) $(LIB_PATH) 
 	$(GLIB) | xargs $(CC) $(CFLAGS) -o $@ $^ -lncursesw
 
 $(LIB_PATH): $(LIB_OBJECTS)
 	ar rcs $@ $^
 
-$(INTERFACE_PATH): $(INTERFACE_OBJECTS)
+$(INTERFACE_PATH): $(INTERFACE_OBJECTS)	
 	ar rcs $@ $^
 
 $(OBJ_DIR)/%.o: %.c
 	$(GLIB) | xargs $(CC) $(CFLAGS) $(DEPSFLAGS) -c -o $@ $< -lncursesw
 
+$(OBJ_DIR)/$(SRC_DIR)/$(LIB_NAME)/%.o: $(SRC_DIR)/$(LIB_NAME)/%.c
+	$(GLIB) | xargs $(CC) $(CFLAGS) $(DEPSFLAGS) -c -o $@ $<
 # TEST
 test: $(LIB_PATH) $(TEST_PATH)
 	$(TEST_PATH)

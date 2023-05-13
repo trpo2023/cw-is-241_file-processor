@@ -107,3 +107,15 @@ GList* get_files_patterns_list(GList* filesname, GList* samples)
     }
     return files_and_patterns_list;
 }
+
+GList* get_files_names(GList* files)
+{
+    GList* names = NULL;
+    for (GList* filename = files; filename != NULL; filename = filename->next) {
+        char* name = get_name(filename->data);
+        if (name != filename->data)
+            name++;
+        names = g_list_append(names, name);
+    }
+    return names;
+}

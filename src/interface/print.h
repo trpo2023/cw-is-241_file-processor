@@ -54,3 +54,5 @@ int print_input_strings(WINDOW* sub, GList* input_strings);
 //
 // Функция выводит в указанное окно информацию о программе
 void print_info(WINDOW* sub, GList* str_list, int y);
+
+void print_list_in_current_dir(WINDOW* menu, char* path);

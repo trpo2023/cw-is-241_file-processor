@@ -26,10 +26,11 @@ void start(WINDOW* menu)
     const char* menu_items[] = {
             "1) Ввести шаблоны",
             "2) Выбрать каталог",
-            "3) Запустить массовое переименование",
-            "4) Опции",
-            "5) Информация",
-            "6) Выход из приложения (F10)",
+            "3) Список файлов в текущем каталоге",
+            "4) Запустить массовое переименование",
+            "5) Опции",
+            "6) Информация",
+            "7) Выход из приложения (F10)",
     };
     GList* input_strings = NULL;
     GList* patterns = NULL;
@@ -38,7 +39,7 @@ void start(WINDOW* menu)
     int y = getmaxy(menu);
     int i = INPUT_PATTERN;
 
-    while ((i = select_items(menu, menu_items, i, 1, 5)) != EXIT
+    while ((i = select_items(menu, menu_items, i, 1, 6)) != EXIT
            && i != KEY_F(10)) {
         wrefresh(menu);
         switch (i) {
@@ -48,6 +49,9 @@ void start(WINDOW* menu)
         case SELECT_DIR:
             select_dir(menu, current_dir);
             mvwprintw(menu, y - 2, 2, "Выбранный каталог: %-30s", current_dir);
+            break;
+        case FILES_LIST:
+            print_list_in_current_dir(menu, current_dir);
             break;
         case PROCESS:
             process(menu, patterns, current_dir, &option);

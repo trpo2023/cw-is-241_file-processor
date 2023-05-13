@@ -65,3 +65,10 @@ gint my_comparator(gconstpointer item1, gconstpointer item2);
 // Возвращает: Строку, содержащую имя директории или путь к файлу
 char* copy_file_name_or_path(
         unsigned char file_type, char* file_name, char* path, char* name);
+
+// Принимает: files - список с файлами или путями к файлам
+//
+// Получает список имён файлов из их путей
+//
+// Возвращает: список с именами файлов
+GList* get_files_names(GList* files);

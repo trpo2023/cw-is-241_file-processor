@@ -1,7 +1,11 @@
 #include <interface/print.h>
 
-#include <interface/get_item.h>
+#include <libfileproc/directory.h>
 #include <libfileproc/lexer.h>
+#include <libfileproc/rename.h>
+
+#include <interface/get_item.h>
+#include <interface/init.h>
 
 void print_counter(WINDOW* sub, int x, int cnt, int max_cnt)
 {
@@ -23,7 +27,8 @@ void print_items(WINDOW* sub, GList* list, int* str_cnt, int a, int b)
     int x = getmaxx(sub) - a;
     int cnt = 0;
     for (GList* i = list; i != NULL && cnt < y; i = i->next) {
-        mvwprintw(sub, cnt + b, 2, "%-*s", x, (char*)i->data);
+        if (strchr((char*)i->data, '/') == NULL)
+            mvwprintw(sub, cnt + b, 2, "%-*s", x, (char*)i->data);
         cnt++;
     }
     *str_cnt = cnt;
@@ -63,4 +68,39 @@ void print_info(WINDOW* sub, GList* str_list, int y)
     print_items(sub, str_list, &cnt, 3, 2);
     mvwprintw_highlite(sub, 2, 2, (char*)str_list->data);
     get_item(sub, str_list, y - 5, size, cnt, 3, 2);
+}
+
+void print_list_in_current_dir(WINDOW* menu, char* path)
+{
+    int y, x;
+    getmaxyx(menu, y, x);
+    WINDOW* sub = init_sub_window(menu, y, x);
+    char str[MAX_LEN];
+    getmaxyx(sub, y, x);
+    sprintf(str, "Текущая директория: %s", get_name(path));
+    mvwprintw(sub, 1, (x - 20 - strlen(get_name(path))) / 2, "%s", str);
+    wrefresh(sub);
+    GList* files = get_files_or_dirs_list(path, FILES);
+    if (g_list_length(files) == 0) {
+        mvwprintw(
+                sub, 3, (x - 37) / 2, "Файлов в данной директории не найдено");
+        wrefresh(sub);
+        g_list_free(files);
+        return;
+    }
+    GList* names = get_files_names(files);
+    names = g_list_sort(names, my_comparator);
+
+    size_t names_len = g_list_length(names);
+
+    int names_cnt = 0;
+    print_items(sub, names, &names_cnt, 3, 2);
+    mvwprintw_highlite(sub, 2, 2, (char*)names->data);
+
+    get_item(sub, names, y - 5, names_len, names_cnt, 3, 2);
+
+    remove_current_window(sub);
+
+    g_list_free(names);
+    g_list_free_full(files, free);
 }

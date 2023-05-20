@@ -48,7 +48,19 @@ void get_new_name(char* file_path, char* pattern, char* dest);
 //              если new_name не отличается от old_path.
 int get_correct_name(char* old_path, char* new_name, char* dest, Option* opt);
 
+// Принимает:   str - строка, которую необходимо сократить.
+//              dest - массив для записи новой строки.
+//              len - длина строки.
+//              max_len - максимально допустимая длина строки
+//
+// Функция сокращает строку.
 void make_str_smaller(char* str, char* dest, size_t len, size_t max_len);
+
+// Принимает:   old_name - старое имя файла.
+//              new_name - новое имя файла.
+//              x - желаемая длина возвращаемой строки.
+//
+// Функция возврашает строку вида: "old_name  ->  new_name".
 char* write_correct_renamed_string(int x, char* old_name, char* new_name);
 
 // Принимает:   to_rename_list - список структур File_to_rename.

@@ -37,32 +37,39 @@ void start(WINDOW* menu)
     Option option = {0};
     char current_dir[MAX_LEN] = ".";
     int y = getmaxy(menu);
+    int x = getmaxx(menu);
     int i = INPUT_PATTERN;
 
-    while ((i = select_items(menu, menu_items, i, 1, 6)) != EXIT
-           && i != KEY_F(10)) {
+    while (i != KEY_F(10)
+           && (i = select_items(menu, menu_items, i, 1, 6)) != EXIT) {
         wrefresh(menu);
         switch (i) {
         case INPUT_PATTERN:
             patterns = pattern_input(menu, &input_strings, patterns);
             break;
         case SELECT_DIR:
-            select_dir(menu, current_dir);
-            mvwprintw(menu, y - 2, 2, "Выбранный каталог: %-30s", current_dir);
+            if (!select_dir(menu, current_dir))
+                i = KEY_F(10);
+            mvwprintw(menu, y - 2, 2, "Выбранный каталог:");
+            print_str(menu, current_dir, y - 2, (x / 2) - 21, 1, 0, 0, 19);
             break;
         case FILES_LIST:
-            print_list_in_current_dir(menu, current_dir);
+            if (!print_list_in_current_dir(menu, current_dir))
+                i = KEY_F(10);
             break;
         case PROCESS:
-            process(menu, patterns, current_dir, &option);
+            if (!process(menu, patterns, current_dir, &option))
+                i = KEY_F(10);
             clean_data(&option, &input_strings, &patterns);
             break;
         case SELECT_OPT:
-            select_option(
-                    menu, &option, &input_strings, &patterns, current_dir);
+            if (!select_option(
+                        menu, &option, &input_strings, &patterns, current_dir))
+                i = KEY_F(10);
             break;
         case INFO:
-            show_info(menu);
+            if (!show_info(menu))
+                i = KEY_F(10);
             break;
         }
         mvwprintw_highlite(menu, i + 1, 2, menu_items[i]);

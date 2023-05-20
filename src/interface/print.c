@@ -77,8 +77,7 @@ void print_items(
             strcpy(dest, i->data);
         }
 
-        if (strchr((char*)i->data, '/') == NULL)
-            mvwprintw(sub, cnt + b, 2, "%-*s", x, dest);
+        mvwprintw(sub, cnt + b, 2, "%-*s", x, dest);
         cnt++;
     }
     *str_cnt = cnt;

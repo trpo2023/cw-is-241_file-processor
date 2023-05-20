@@ -37,6 +37,7 @@ void start(WINDOW* menu)
     Option option = {0};
     char current_dir[MAX_LEN] = ".";
     int y = getmaxy(menu);
+    int x = getmaxx(menu);
     int i = INPUT_PATTERN;
 
     while (i != KEY_F(10)
@@ -49,7 +50,8 @@ void start(WINDOW* menu)
         case SELECT_DIR:
             if (!select_dir(menu, current_dir))
                 i = KEY_F(10);
-            mvwprintw(menu, y - 2, 2, "Выбранный каталог: %-30s", current_dir);
+            mvwprintw(menu, y - 2, 2, "Выбранный каталог:");
+            print_str(menu, current_dir, y - 2, (x / 2) - 21, 0, 0, 19);
             break;
         case FILES_LIST:
             if (!print_list_in_current_dir(menu, current_dir))

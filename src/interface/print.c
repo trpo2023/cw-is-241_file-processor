@@ -27,8 +27,16 @@ void print_items(WINDOW* sub, GList* list, int* str_cnt, int a, int b)
     int x = getmaxx(sub) - a;
     int cnt = 0;
     for (GList* i = list; i != NULL && cnt < y; i = i->next) {
+        size_t str_len = strlen((char*)i->data);
+        char dest[MAX_LEN] = {0};
+        if (str_len >= x) {
+            make_str_smaller(i->data, dest, str_len, x);
+        } else {
+            strcpy(dest, i->data);
+        }
+
         if (strchr((char*)i->data, '/') == NULL)
-            mvwprintw(sub, cnt + b, 2, "%-*s", x, (char*)i->data);
+            mvwprintw(sub, cnt + b, 2, "%-*s", x, dest);
         cnt++;
     }
     *str_cnt = cnt;
@@ -77,11 +85,12 @@ int print_list_in_current_dir(WINDOW* menu, char* path)
     int y, x;
     getmaxyx(menu, y, x);
     WINDOW* sub = init_sub_window(menu, y, x);
-    char str[MAX_LEN];
     getmaxyx(sub, y, x);
-    sprintf(str, "Текущая директория: %s", get_name(path));
-    mvwprintw(sub, 1, (x - 20 - strlen(get_name(path))) / 2, "%s", str);
+
+    mvwprintw(sub, 1, 1, "Текущая директория: ");
+    print_str(sub, get_name(path), 1, (x / 2), 0, 0, 19);
     wrefresh(sub);
+
     GList* files = get_files_or_dirs_list(path, FILES);
     if (g_list_length(files) == 0) {
         mvwprintw(

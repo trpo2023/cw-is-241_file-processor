@@ -1,6 +1,8 @@
 #include <interface/get_item.h>
 #include <interface/print.h>
 
+#include <libfileproc/rename.h>
+
 int select_items(WINDOW* win, const char* items[], int i, int offset, int max)
 {
     int y, x;
@@ -30,6 +32,34 @@ int select_items(WINDOW* win, const char* items[], int i, int offset, int max)
     return KEY_F(10);
 }
 
+void print_str(
+        WINDOW* sub, char* str, int i, int x, int dx, int dy, int x_offset)
+{
+    size_t str_len = strlen(str);
+    char dest[MAX_LEN] = {0};
+    if (str_len >= x - dx) {
+        make_str_smaller(str, dest, str_len, x - dx);
+    } else {
+        strcpy(dest, str);
+    }
+
+    mvwprintw(sub, i + dy, 2 + x_offset, "%-*s", x - dx, dest);
+}
+
+void print_str_highlite(
+        WINDOW* sub, char* str, int i, int x, int x_offset, int y_offset)
+{
+    size_t str_len = strlen(str);
+    char dest[MAX_LEN] = {0};
+    if (str_len >= x - x_offset) {
+        make_str_smaller(str, dest, str_len, x - x_offset);
+    } else {
+        strcpy(dest, str);
+    }
+
+    mvwprintw_highlite(sub, i + y_offset, 2, dest);
+}
+
 char* get_item(
         WINDOW* sub,
         GList* dir_list,
@@ -47,13 +77,12 @@ char* get_item(
     print_counter(sub, x, page + 1, max_pages + 1);
 
     while ((ch = wgetch(sub)) != 10) { // 10 - KEY_ENTER
-        mvwprintw(sub, i + b, 2, "%s", (char*)dir_list->data);
+        print_str(sub, (char*)dir_list->data, i, x, a, b, 0);
         if (i == 0)
             pages[page] = dir_list;
 
         switch (ch) {
         case KEY_F(10):
-            printf("fuck\n");
             return NULL;
         case KEY_UP:
             i--;
@@ -78,7 +107,7 @@ char* get_item(
             } else
                 dir_list = dir_list->next;
         }
-        mvwprintw_highlite(sub, i + b, 2, (char*)dir_list->data);
+        print_str_highlite(sub, (char*)dir_list->data, i, x, a, b);
         wrefresh(sub);
     }
 

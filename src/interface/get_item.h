@@ -12,6 +12,9 @@
 // Функция для выбода списка в интерфейсном окне
 int select_items(WINDOW* win, const char* items[], int i, int offset, int max);
 
+void print_str(
+        WINDOW* sub, char* str, int i, int x, int dx, int dy, int x_offset);
+
 // Принимает: sub - указатель на текущее окно
 //            dir_list - указатель на список директорий
 //            y - координата по оси y

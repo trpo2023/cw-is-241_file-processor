@@ -26,7 +26,8 @@ void mvwprintw_highlite(WINDOW* win, int y, int x, const char* str);
 //            b - смешение по x
 //
 // Функция выводит строки из указанного списка в окно
-void print_items(WINDOW* sub, GList* list, int* str_cnt, int a, int b);
+void print_items(
+        WINDOW* sub, GList* list, int* str_cnt, int small, int a, int b);
 
 // Принимает: sub - указатель на окно
 //            list - указатель на список
@@ -38,7 +39,14 @@ void print_items(WINDOW* sub, GList* list, int* str_cnt, int a, int b);
 //
 // Функция выводит на экран число страниц и информацию из указанного списка
 void print_new_page(
-        WINDOW* sub, GList* list, int* cnt, int p, int max_p, int a, int b);
+        WINDOW* sub,
+        GList* list,
+        int* cnt,
+        int p,
+        int max_p,
+        int small,
+        int a,
+        int b);
 
 // Принимает: sub - указатель на окно
 //            input_strings - список со строками

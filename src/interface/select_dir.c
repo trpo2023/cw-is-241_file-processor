@@ -20,10 +20,10 @@ char* select_dir(WINDOW* menu, char* current_dir)
     size_t dir_len = g_list_length(dir_list);
 
     int dir_cnt = 0; // count of directories on one page
-    print_items(sub, dir_list, &dir_cnt, 3, 2);
+    print_items(sub, dir_list, &dir_cnt, 1, 3, 2);
     mvwprintw_highlite(sub, 2, 2, (char*)dir_list->data);
 
-    dir = get_item(sub, dir_list, y - 5, dir_len, dir_cnt, 3, 2);
+    dir = get_item(sub, dir_list, y - 5, dir_len, dir_cnt, 1, 3, 2);
     if (!dir)
         return NULL;
     strcpy(current_dir, dir);

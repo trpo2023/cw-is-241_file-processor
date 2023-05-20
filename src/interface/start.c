@@ -51,7 +51,7 @@ void start(WINDOW* menu)
             if (!select_dir(menu, current_dir))
                 i = KEY_F(10);
             mvwprintw(menu, y - 2, 2, "Выбранный каталог:");
-            print_str(menu, current_dir, y - 2, (x / 2) - 21, 0, 0, 19);
+            print_str(menu, current_dir, y - 2, (x / 2) - 21, 1, 0, 0, 19);
             break;
         case FILES_LIST:
             if (!print_list_in_current_dir(menu, current_dir))

@@ -13,7 +13,14 @@
 int select_items(WINDOW* win, const char* items[], int i, int offset, int max);
 
 void print_str(
-        WINDOW* sub, char* str, int i, int x, int dx, int dy, int x_offset);
+        WINDOW* sub,
+        char* str,
+        int i,
+        int x,
+        int small,
+        int dx,
+        int dy,
+        int x_offset);
 
 // Принимает: sub - указатель на текущее окно
 //            dir_list - указатель на список директорий
@@ -33,5 +40,6 @@ char* get_item(
         int y,
         size_t len,
         int str_cnt,
+        int small,
         int a,
         int b);

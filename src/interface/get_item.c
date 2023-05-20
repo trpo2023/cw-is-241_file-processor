@@ -33,11 +33,18 @@ int select_items(WINDOW* win, const char* items[], int i, int offset, int max)
 }
 
 void print_str(
-        WINDOW* sub, char* str, int i, int x, int dx, int dy, int x_offset)
+        WINDOW* sub,
+        char* str,
+        int i,
+        int x,
+        int small,
+        int dx,
+        int dy,
+        int x_offset)
 {
     size_t str_len = strlen(str);
     char dest[MAX_LEN] = {0};
-    if (str_len >= x - dx) {
+    if (str_len >= x - dx && small) {
         make_str_smaller(str, dest, str_len, x - dx);
     } else {
         strcpy(dest, str);
@@ -47,11 +54,17 @@ void print_str(
 }
 
 void print_str_highlite(
-        WINDOW* sub, char* str, int i, int x, int x_offset, int y_offset)
+        WINDOW* sub,
+        char* str,
+        int i,
+        int x,
+        int small,
+        int x_offset,
+        int y_offset)
 {
     size_t str_len = strlen(str);
     char dest[MAX_LEN] = {0};
-    if (str_len >= x - x_offset) {
+    if (str_len >= x - x_offset && small) {
         make_str_smaller(str, dest, str_len, x - x_offset);
     } else {
         strcpy(dest, str);
@@ -66,6 +79,7 @@ char* get_item(
         int y,
         size_t len,
         int str_cnt,
+        int small,
         int a,
         int b)
 {
@@ -77,7 +91,7 @@ char* get_item(
     print_counter(sub, x, page + 1, max_pages + 1);
 
     while ((ch = wgetch(sub)) != 10) { // 10 - KEY_ENTER
-        print_str(sub, (char*)dir_list->data, i, x, a, b, 0);
+        print_str(sub, (char*)dir_list->data, i, x, small, a, b, 0);
         if (i == 0)
             pages[page] = dir_list;
 
@@ -89,7 +103,14 @@ char* get_item(
             if (i < 0 && page >= 1) {
                 page--;
                 print_new_page(
-                        sub, pages[page], &str_cnt, page, max_pages, a, b);
+                        sub,
+                        pages[page],
+                        &str_cnt,
+                        page,
+                        max_pages,
+                        small,
+                        a,
+                        b);
                 i = y - 1;
             } else if (i < 0)
                 i++;
@@ -102,12 +123,13 @@ char* get_item(
                 i--;
             else if (i >= y) {
                 page++;
-                print_new_page(sub, dir_list, &str_cnt, page, max_pages, a, b);
+                print_new_page(
+                        sub, dir_list, &str_cnt, page, max_pages, small, a, b);
                 i = 0;
             } else
                 dir_list = dir_list->next;
         }
-        print_str_highlite(sub, (char*)dir_list->data, i, x, a, b);
+        print_str_highlite(sub, (char*)dir_list->data, i, x, small, a, b);
         wrefresh(sub);
     }
 

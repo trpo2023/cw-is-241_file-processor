@@ -32,10 +32,10 @@ int print_renamed_list(WINDOW* sub, GList* renamed_list, int x, int y)
     int str_cnt = 0;
     size_t size = g_list_length(renamed_list);
 
-    print_items(sub, renamed_list, &str_cnt, 5, 4);
+    print_items(sub, renamed_list, &str_cnt, 0, 5, 4);
     mvwprintw_highlite(sub, 4, 2, (char*)renamed_list->data);
 
-    if (!get_item(sub, renamed_list, y - 5, size, str_cnt, 5, 4))
+    if (!get_item(sub, renamed_list, y - 5, size, str_cnt, 0, 5, 4))
         return 0;
     return 1;
 }

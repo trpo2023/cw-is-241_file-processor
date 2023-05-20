@@ -98,8 +98,9 @@ void write_correct_index(char* new_name, char* dest, char* suffix, Option* opt)
 
 int get_correct_name(char* old_path, char* new_name, char* dest, Option* opt)
 {
-    if ((file_exist(old_path) == 0 || strcmp(old_path, new_name) == 0)
-        && opt->name_register == R_DEFAULT)
+    if (file_exist(old_path) == 0)
+        return -1;
+    if (strcmp(old_path, new_name) == 0 && opt->name_register == R_DEFAULT)
         return -1;
 
     size_t dest_len = strlen(new_name);

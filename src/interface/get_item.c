@@ -23,7 +23,7 @@ int select_items(WINDOW* win, const char* items[], int i, int offset, int max)
             return i;
         }
         mvwprintw_highlite(win, i + offset, 2, items[i]);
-        if (max == 4) // menu options
+        if (max == 6) // menu options
         {
             mvwprintw(win, y - 3, 2, "%-*s", x / 2, items[i]);
         }

@@ -32,47 +32,6 @@ int select_items(WINDOW* win, const char* items[], int i, int offset, int max)
     return KEY_F(10);
 }
 
-void print_str(
-        WINDOW* sub,
-        char* str,
-        int i,
-        int x,
-        int small,
-        int dx,
-        int dy,
-        int x_offset)
-{
-    size_t str_len = strlen(str);
-    char dest[MAX_LEN] = {0};
-    if (str_len >= x - dx && small) {
-        make_str_smaller(str, dest, str_len, x - dx);
-    } else {
-        strcpy(dest, str);
-    }
-
-    mvwprintw(sub, i + dy, 2 + x_offset, "%-*s", x - dx, dest);
-}
-
-void print_str_highlite(
-        WINDOW* sub,
-        char* str,
-        int i,
-        int x,
-        int small,
-        int x_offset,
-        int y_offset)
-{
-    size_t str_len = strlen(str);
-    char dest[MAX_LEN] = {0};
-    if (str_len >= x - x_offset && small) {
-        make_str_smaller(str, dest, str_len, x - x_offset);
-    } else {
-        strcpy(dest, str);
-    }
-
-    mvwprintw_highlite(sub, i + y_offset, 2, dest);
-}
-
 char* get_item(
         WINDOW* sub,
         GList* dir_list,

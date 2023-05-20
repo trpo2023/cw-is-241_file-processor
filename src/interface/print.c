@@ -21,6 +21,47 @@ void mvwprintw_highlite(WINDOW* win, int y, int x, const char* str)
     wattroff(win, A_STANDOUT);
 }
 
+void print_str(
+        WINDOW* sub,
+        char* str,
+        int i,
+        int x,
+        int small,
+        int dx,
+        int dy,
+        int x_offset)
+{
+    size_t str_len = strlen(str);
+    char dest[MAX_LEN] = {0};
+    if (str_len >= x - dx && small) {
+        make_str_smaller(str, dest, str_len, x - dx);
+    } else {
+        strcpy(dest, str);
+    }
+
+    mvwprintw(sub, i + dy, 2 + x_offset, "%-*s", x - dx, dest);
+}
+
+void print_str_highlite(
+        WINDOW* sub,
+        char* str,
+        int i,
+        int x,
+        int small,
+        int x_offset,
+        int y_offset)
+{
+    size_t str_len = strlen(str);
+    char dest[MAX_LEN] = {0};
+    if (str_len >= x - x_offset && small) {
+        make_str_smaller(str, dest, str_len, x - x_offset);
+    } else {
+        strcpy(dest, str);
+    }
+
+    mvwprintw_highlite(sub, i + y_offset, 2, dest);
+}
+
 void print_items(
         WINDOW* sub, GList* list, int* str_cnt, int small, int a, int b)
 {
@@ -57,12 +98,12 @@ void print_new_page(
         int* cnt,
         int p,
         int max_p,
+        int small,
         int a,
-        int b,
-        int small)
+        int b)
 {
     int x = getmaxx(sub);
-    print_items(sub, list, cnt, a, b, small);
+    print_items(sub, list, cnt, small, a, b);
     print_counter(sub, x, p + 1, max_p + 1);
 }
 

@@ -52,6 +52,9 @@ char* get_item(
             pages[page] = dir_list;
 
         switch (ch) {
+        case KEY_F(10):
+            printf("fuck\n");
+            return NULL;
         case KEY_UP:
             i--;
             if (i < 0 && page >= 1) {
@@ -78,5 +81,6 @@ char* get_item(
         mvwprintw_highlite(sub, i + b, 2, (char*)dir_list->data);
         wrefresh(sub);
     }
+
     return (char*)dir_list->data;
 }

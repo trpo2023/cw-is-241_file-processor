@@ -24,6 +24,8 @@ char* select_dir(WINDOW* menu, char* current_dir)
     mvwprintw_highlite(sub, 2, 2, (char*)dir_list->data);
 
     dir = get_item(sub, dir_list, y - 5, dir_len, dir_cnt, 3, 2);
+    if (!dir)
+        return NULL;
     strcpy(current_dir, dir);
 
     remove_current_window(sub);

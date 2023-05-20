@@ -20,7 +20,7 @@ enum OptionItems {
 // Функция создает окно с выбором опций
 // и в зависимости от введёной строки выбирает нужную
 // и выполняет соответсвующие данной опции действия
-void select_option(
+int select_option(
         WINDOW* menu, Option* opt, GList** inp_s, GList** samp, char* curr_dir);
 
 // Принимает: sub - указатель на текущее окно

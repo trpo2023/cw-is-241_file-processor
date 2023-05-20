@@ -22,11 +22,11 @@ GList* get_renamed_list(WINDOW* sub, GList* renamed_files)
     return str_list;
 }
 
-void print_renamed_list(WINDOW* sub, GList* renamed_list, int x, int y)
+int print_renamed_list(WINDOW* sub, GList* renamed_list, int x, int y)
 {
     if (renamed_list == NULL) {
         wgetch(sub);
-        return;
+        return 1;
     }
 
     int str_cnt = 0;
@@ -35,16 +35,19 @@ void print_renamed_list(WINDOW* sub, GList* renamed_list, int x, int y)
     print_items(sub, renamed_list, &str_cnt, 5, 4);
     mvwprintw_highlite(sub, 4, 2, (char*)renamed_list->data);
 
-    get_item(sub, renamed_list, y - 5, size, str_cnt, 5, 4);
+    if (!get_item(sub, renamed_list, y - 5, size, str_cnt, 5, 4))
+        return 0;
+    return 1;
 }
 
-void process_with_renamed_list(
+int process_with_renamed_list(
         WINDOW* sub, GList* renamed_file_list, int x, int y)
 {
     GList* list = get_renamed_list(sub, renamed_file_list);
     list = g_list_sort(list, my_comparator);
-    print_renamed_list(sub, list, x, y);
+    int stat = print_renamed_list(sub, list, x, y);
     free_renamed_list(renamed_file_list, list);
+    return stat;
 }
 
 void print_succes_message(GList* renamed_file_list, WINDOW* sub)
@@ -62,7 +65,7 @@ void print_succes_message(GList* renamed_file_list, WINDOW* sub)
     mvwprintw(sub, 3, (x - 34) / 2, "%s", str);
 }
 
-void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
+int process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
 {
     int y, x;
     getmaxyx(menu, y, x);
@@ -73,12 +76,13 @@ void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt)
         char stri[] = "Сперва введите шаблоны, после запускайте переименование";
         mvwprintw(sub, 1, (x - 55) / 2, "%s", stri);
         wrefresh(sub);
-        return;
+        return 1;
     }
     mvwprintw(sub, 1, (x - 30) / 2, "Идет процесс переименования...");
     wrefresh(sub);
     renamed_file_list = rename_and_get_renamed_list(sample, dir_path, opt);
     print_succes_message(renamed_file_list, sub);
-    process_with_renamed_list(sub, renamed_file_list, x, y);
+    int stat = process_with_renamed_list(sub, renamed_file_list, x, y);
     remove_current_window(sub);
+    return stat;
 }

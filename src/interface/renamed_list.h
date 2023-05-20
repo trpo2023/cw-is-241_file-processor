@@ -19,7 +19,7 @@ GList* get_renamed_list(WINDOW* sub, GList* renamed_files);
 //            y - координата по оси y
 //
 // Функция выводит на экран новое имя файлов из списка перименнованых файлов
-void print_renamed_list(WINDOW* sub, GList* renamed_list, int x, int y);
+int print_renamed_list(WINDOW* sub, GList* renamed_list, int x, int y);
 
 // Принимает: sub - указатель на текущее окно
 //            renamed_file_list - список переименованных файлов
@@ -27,7 +27,7 @@ void print_renamed_list(WINDOW* sub, GList* renamed_list, int x, int y);
 //            y - координата по оси y
 //
 // Функция вызывает функцию для получение новых имён файлов и вывода их на экран
-void process_with_renamed_list(
+int process_with_renamed_list(
         WINDOW* sub, GList* renamed_file_list, int x, int y);
 
 // Принимает: renamed_file_list - список переименованных файлов
@@ -45,4 +45,4 @@ void print_succes_message(GList* renamed_file_list, WINDOW* sub);
 // Функция вызывает предыдущие ф-ии из данного файла
 // с целью переименования и получения списка
 // переименовынных файлов
-void process(WINDOW* menu, GList* sample, char* dir_path, Option* opt);
+int process(WINDOW* menu, GList* sample, char* dir_path, Option* opt);

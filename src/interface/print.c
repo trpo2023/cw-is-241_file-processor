@@ -61,16 +61,18 @@ int print_input_strings(WINDOW* sub, GList* input_strings)
     return cnt;
 }
 
-void print_info(WINDOW* sub, GList* str_list, int y)
+int print_info(WINDOW* sub, GList* str_list, int y)
 {
     size_t size = g_list_length(str_list);
     int cnt = 0;
     print_items(sub, str_list, &cnt, 3, 2);
     mvwprintw_highlite(sub, 2, 2, (char*)str_list->data);
-    get_item(sub, str_list, y - 5, size, cnt, 3, 2);
+    if (!get_item(sub, str_list, y - 5, size, cnt, 3, 2))
+        return 0;
+    return 1;
 }
 
-void print_list_in_current_dir(WINDOW* menu, char* path)
+int print_list_in_current_dir(WINDOW* menu, char* path)
 {
     int y, x;
     getmaxyx(menu, y, x);
@@ -86,7 +88,7 @@ void print_list_in_current_dir(WINDOW* menu, char* path)
                 sub, 3, (x - 37) / 2, "Файлов в данной директории не найдено");
         wrefresh(sub);
         g_list_free(files);
-        return;
+        return 1;
     }
     GList* names = get_files_names(files);
     names = g_list_sort(names, my_comparator);
@@ -97,10 +99,14 @@ void print_list_in_current_dir(WINDOW* menu, char* path)
     print_items(sub, names, &names_cnt, 3, 2);
     mvwprintw_highlite(sub, 2, 2, (char*)names->data);
 
-    get_item(sub, names, y - 5, names_len, names_cnt, 3, 2);
+    char* stat = get_item(sub, names, y - 5, names_len, names_cnt, 3, 2);
+    if (!stat)
+        return 0;
 
     remove_current_window(sub);
 
     g_list_free(names);
     g_list_free_full(files, free);
+
+    return 1;
 }

@@ -35,7 +35,7 @@ void print_opt(WINDOW* sub, Option* opt, int i)
     }
 }
 
-void select_option(
+int select_option(
         WINDOW* menu, Option* opt, GList** inp_s, GList** samp, char* curr_dir)
 {
     int options_cnt = 2;
@@ -66,4 +66,9 @@ void select_option(
     }
 
     remove_current_window(sub);
+
+    if (i == KEY_F(10))
+        return 0;
+
+    return 1;
 }

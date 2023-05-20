@@ -1,0 +1,7 @@
+*.a
+*.d
+*.o
+.vscode
+main_test
+fileproc
+!src/fileproc/
